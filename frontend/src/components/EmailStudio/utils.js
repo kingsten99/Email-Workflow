@@ -1,16 +1,15 @@
-import { EmailComponent, CSSProperties } from './types';
+import { EmailComponent } from './types'; // Ensure EmailComponent is correctly imported
 
 // Generate unique ID for components
-export const generateId = (): string => {
+export const generateId = () => {
   return `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
 // Generate HTML from components
-export const generateHTML = (components: EmailComponent[]): string => {
-  return components.map(component => {
+export const generateHTML = (components) => {
+  return components.map((component) => {
     // Merge component styles with email-safe defaults
-    const emailSafeStyles: CSSProperties = {
-      // Email-safe defaults that preserve inline layout from canvas
+    const emailSafeStyles = {
       boxSizing: 'border-box',
       display: component.type === 'image' ? 'inline-block' : (component.styles.display || 'inline-block'),
       margin: component.styles.margin || '10px',
@@ -26,7 +25,6 @@ export const generateHTML = (components: EmailComponent[]): string => {
     switch (component.type) {
       case 'text':
         return `<div id="${component.id}" style="${styleString}">${component.content}</div>`;
-      
       case 'image':
         const imgStyles = {
           ...emailSafeStyles,
@@ -37,7 +35,6 @@ export const generateHTML = (components: EmailComponent[]): string => {
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
           .join('; ');
         return `<img id="${component.id}" src="${component.attributes.src || ''}" alt="${component.attributes.alt || ''}" style="${imgStyleString}" />`;
-      
       case 'button':
         const buttonStyles = {
           ...emailSafeStyles,
@@ -50,7 +47,6 @@ export const generateHTML = (components: EmailComponent[]): string => {
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
           .join('; ');
         return `<a id="${component.id}" href="${component.attributes.href || '#'}" style="${buttonStyleString}">${component.content}</a>`;
-      
       case 'container':
         const childrenHTML = component.children ? generateHTML(component.children) : component.content;
         const containerStyles = {
@@ -61,7 +57,6 @@ export const generateHTML = (components: EmailComponent[]): string => {
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
           .join('; ');
         return `<div id="${component.id}" style="${containerStyleString}">${childrenHTML}</div>`;
-      
       case 'row':
         const rowChildrenHTML = component.children ? generateHTML(component.children) : '';
         const rowStyles = {
@@ -74,7 +69,6 @@ export const generateHTML = (components: EmailComponent[]): string => {
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
           .join('; ');
         return `<div id="${component.id}" style="${rowStyleString}">${rowChildrenHTML}</div>`;
-      
       case 'column':
         const columnChildrenHTML = component.children ? generateHTML(component.children) : component.content;
         const isFlexChild = component.styles.flex !== undefined;
@@ -86,17 +80,10 @@ export const generateHTML = (components: EmailComponent[]): string => {
           flex: component.styles.flex || undefined, // Preserve flex value
           minWidth: isFlexChild ? '0' : '200px', // Allow flex shrinking
         };
-        // Clean undefined values
-        Object.keys(columnStyles).forEach(key => {
-          if (columnStyles[key as keyof typeof columnStyles] === undefined) {
-            delete columnStyles[key as keyof typeof columnStyles];
-          }
-        });
         const columnStyleString = Object.entries(columnStyles)
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
           .join('; ');
         return `<div id="${component.id}" style="${columnStyleString}">${columnChildrenHTML}</div>`;
-      
       default:
         return `<div id="${component.id}" style="${styleString}">${component.content}</div>`;
     }
@@ -104,19 +91,19 @@ export const generateHTML = (components: EmailComponent[]): string => {
 };
 
 // Generate CSS from components - Email client compatible
-export const generateCSS = (components: EmailComponent[]): string => {
+export const generateCSS = (components) => {
   return `
     /* Email client resets and compatibility */
     body, table, td, p, a, li, blockquote {
       -webkit-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
     }
-    
+
     table, td {
       mso-table-lspace: 0pt;
       mso-table-rspace: 0pt;
     }
-    
+
     img {
       -ms-interpolation-mode: bicubic;
       border: 0;
@@ -127,35 +114,35 @@ export const generateCSS = (components: EmailComponent[]): string => {
       max-width: 100%;
       vertical-align: top;
     }
-    
+
     table {
       border-collapse: collapse !important;
       width: 100%;
     }
-    
+
     body {
       margin: 0 !important;
       padding: 20px !important;
-      width: 100% !important;
+      // width: 100% !important;
       height: 100% !important;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif !important;
       line-height: 1.6 !important;
       color: #333333 !important;
       background-color: #f8f9fa !important;
     }
-    
+
     /* Default font styles */
     body, td, p, a {
       font-family: 'Inter', Arial, sans-serif;
       font-size: 14px;
       line-height: 1.4;
     }
-    
+
     a {
       color: inherit;
       text-decoration: none;
     }
-    
+
     /* Email container */
     .email-container {
       max-width: 600px;
@@ -164,17 +151,17 @@ export const generateCSS = (components: EmailComponent[]): string => {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       padding: 0;
     }
-    
+
     /* Ensure inline-block elements align properly */
     div[style*="display: inline-block"] {
       vertical-align: top;
     }
-    
+
     /* Email content wrapper for consistent inline layout */
     .email-container > * {
       white-space: normal;
     }
-    
+
     /* Responsive design for mobile */
     @media only screen and (max-width: 600px) {
       .email-container {
@@ -182,13 +169,13 @@ export const generateCSS = (components: EmailComponent[]): string => {
         margin: 0 !important;
         padding: 10px !important;
       }
-      
+
       /* Stack flex rows on mobile */
       div[style*="display: flex"] {
         display: block !important;
         width: 100% !important;
       }
-      
+
       /* Stack flex children on mobile */
       div[style*="flex:"] {
         display: block !important;
@@ -196,25 +183,25 @@ export const generateCSS = (components: EmailComponent[]): string => {
         margin-bottom: 10px !important;
         flex: none !important;
       }
-      
+
       /* Stack inline elements on mobile */
       div[style*="display: inline-block"] {
         display: block !important;
         width: 100% !important;
         margin-bottom: 10px !important;
       }
-      
+
       /* Except for small inline elements like buttons */
       a[style*="display: inline-block"] {
         display: inline-block !important;
         width: auto !important;
       }
-      
+
       /* Reduce padding and margins on mobile */
       div[style*="padding"] {
         padding: 10px !important;
       }
-      
+
       /* Ensure minimum touch targets */
       a, button {
         min-height: 44px !important;
@@ -225,7 +212,7 @@ export const generateCSS = (components: EmailComponent[]): string => {
 };
 
 // Deep clone component (useful for duplicating)
-export const cloneComponent = (component: EmailComponent): EmailComponent => {
+export const cloneComponent = (component) => {
   return {
     ...component,
     id: generateId(),
@@ -234,7 +221,7 @@ export const cloneComponent = (component: EmailComponent): EmailComponent => {
 };
 
 // Find component by ID in nested structure
-export const findComponentById = (components: EmailComponent[], id: string): EmailComponent | null => {
+export const findComponentById = (components, id) => {
   for (const component of components) {
     if (component.id === id) {
       return component;
@@ -248,12 +235,8 @@ export const findComponentById = (components: EmailComponent[], id: string): Ema
 };
 
 // Update component by ID in nested structure
-export const updateComponentById = (
-  components: EmailComponent[], 
-  id: string, 
-  updates: Partial<EmailComponent>
-): EmailComponent[] => {
-  return components.map(component => {
+export const updateComponentById = (components, id, updates) => {
+  return components.map((component) => {
     if (component.id === id) {
       return { ...component, ...updates };
     }
@@ -268,8 +251,8 @@ export const updateComponentById = (
 };
 
 // Delete component by ID in nested structure
-export const deleteComponentById = (components: EmailComponent[], id: string): EmailComponent[] => {
-  return components.filter(component => {
+export const deleteComponentById = (components, id) => {
+  return components.filter((component) => {
     if (component.id === id) {
       return false;
     }
@@ -281,13 +264,10 @@ export const deleteComponentById = (components: EmailComponent[], id: string): E
 };
 
 // Add component to container
-export const addComponentToContainer = (
-  components: EmailComponent[], 
-  containerId: string, 
-  newComponent: EmailComponent
-): EmailComponent[] => {
-  return components.map(component => {
-    if (component.id === containerId && (component.type === 'container' || component.type === 'row' || component.type === 'column')) {
+export const addComponentToContainer = (components, containerId, newComponent) => {
+  return components.map((component) => {
+    if (component.id === containerId && 
+        (component.type === 'container' || component.type === 'row' || component.type === 'column')) {
       return {
         ...component,
         children: [...(component.children || []), { ...newComponent, id: generateId() }],
@@ -304,18 +284,17 @@ export const addComponentToContainer = (
 };
 
 // Get all components in flat array (for layers panel)
-export const flattenComponents = (components: EmailComponent[]): EmailComponent[] => {
-  const result: EmailComponent[] = [];
-  
-  const traverse = (comps: EmailComponent[], depth = 0) => {
-    comps.forEach(component => {
-      result.push({ ...component, depth } as any);
+export const flattenComponents = (components) => {
+  const result = [];
+  const traverse = (comps, depth = 0) => {
+    comps.forEach((component) => {
+      result.push({ ...component, depth });
       if (component.children) {
         traverse(component.children, depth + 1);
       }
     });
   };
-  
+
   traverse(components);
   return result;
 };

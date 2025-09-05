@@ -13,12 +13,9 @@ const VariablesPanel: React.FC<VariablesPanelProps> = ({
   onInsertVariable 
 }) => {
   const defaultVariables = [
-    { key: 'firstName', label: 'First Name', description: 'Recipient\'s first name' },
-    { key: 'lastName', label: 'Last Name', description: 'Recipient\'s last name' },
+    { key: 'name', label: 'Name', description: 'Recipient\'s name' },
+    { key: 'role', label: 'Role', description: 'Recipient\'s role' },
     { key: 'email', label: 'Email', description: 'Recipient\'s email address' },
-    { key: 'companyName', label: 'Company', description: 'Recipient\'s company' },
-    { key: 'currentDate', label: 'Current Date', description: 'Today\'s date' },
-    { key: 'currentYear', label: 'Current Year', description: 'Current year' },
   ];
 
   const handleVariableClick = (variableKey: string) => {

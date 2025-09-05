@@ -250,7 +250,7 @@ class EmailService {
     };
 
     const result = await this.transporter.sendMail(mailOptions);
-    console.log(`✅ Test email sent successfully`);
+    console.log(` Test email sent successfully`);
 
     return {
       messageId: result.messageId,

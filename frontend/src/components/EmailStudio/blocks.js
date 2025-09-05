@@ -1,17 +1,16 @@
 import React from 'react';
-import { BlockType } from './types';
 
 // Available block definitions
-export const availableBlocks: BlockType[] = [
+export const availableBlocks = [
   {
     id: 'text',
     label: 'Text',
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, React.createElement('path', {
-      d: 'M2 6h16v2H2V6zm0 4h16v2H2v-2zm0 4h10v2H2v-2z'
+      d: 'M2 6h16v2H2V6zm0 4h16v2H2v-2zm0 4h10v2H2v-2z',
     })),
     component: {
       type: 'text',
@@ -31,9 +30,9 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, React.createElement('path', {
-      d: 'M2 4h4v2H2V4zm0 4h4v2H2V8zm0 4h4v2H2v-2zm8-8h8v2h-8V4zm0 4h6v2h-6V8zm0 4h8v2h-8v-2z'
+      d: 'M2 4h4v2H2V4zm0 4h4v2H2V8zm0 4h4v2H2v-2zm8-8h8v2h-8V4zm0 4h6v2h-6V8zm0 4h8v2h-8v-2z',
     })),
     component: {
       type: 'text',
@@ -54,9 +53,9 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, React.createElement('path', {
-      d: 'M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z'
+      d: 'M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z',
     })),
     component: {
       type: 'image',
@@ -79,14 +78,14 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, React.createElement('rect', {
       x: '2',
       y: '6',
       width: '16',
       height: '8',
       rx: '2',
-      fill: 'currentColor'
+      fill: 'currentColor',
     })),
     component: {
       type: 'button',
@@ -113,9 +112,9 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, React.createElement('path', {
-      d: 'M2 10h16v1H2v-1z'
+      d: 'M2 10h16v1H2v-1z',
     })),
     component: {
       type: 'container',
@@ -134,17 +133,17 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('path', {
         key: '1',
         d: 'M2 8h16v4H2V8z',
-        fillOpacity: '0.3'
+        fillOpacity: '0.3',
       }),
       React.createElement('path', {
         key: '2',
-        d: 'M6 9h8v2H6V9z'
-      })
+        d: 'M6 9h8v2H6V9z',
+      }),
     ]),
     component: {
       type: 'container',
@@ -162,7 +161,7 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('rect', {
         key: '1',
@@ -172,13 +171,13 @@ export const availableBlocks: BlockType[] = [
         height: '12',
         fill: 'none',
         stroke: 'currentColor',
-        strokeWidth: '1'
+        strokeWidth: '1',
       }),
       React.createElement('path', {
         key: '2',
         d: 'M4 6h12v8H4V6z',
-        fillOpacity: '0.1'
-      })
+        fillOpacity: '0.1',
+      }),
     ]),
     component: {
       type: 'container',
@@ -200,7 +199,7 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('rect', {
         key: '1',
@@ -209,7 +208,7 @@ export const availableBlocks: BlockType[] = [
         width: '7',
         height: '12',
         fill: 'currentColor',
-        fillOpacity: '0.3'
+        fillOpacity: '0.3',
       }),
       React.createElement('rect', {
         key: '2',
@@ -218,8 +217,8 @@ export const availableBlocks: BlockType[] = [
         width: '7',
         height: '12',
         fill: 'currentColor',
-        fillOpacity: '0.3'
-      })
+        fillOpacity: '0.3',
+      }),
     ]),
     component: {
       type: 'row',
@@ -260,7 +259,6 @@ export const availableBlocks: BlockType[] = [
       ],
     },
   },
-  
   // Header Block
   {
     id: 'header',
@@ -268,7 +266,7 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('rect', {
         key: '1',
@@ -276,14 +274,14 @@ export const availableBlocks: BlockType[] = [
         y: '3',
         width: '16',
         height: '4',
-        fill: 'currentColor'
+        fill: 'currentColor',
       }),
       React.createElement('circle', {
         key: '2',
         cx: '5',
         cy: '5',
         r: '1',
-        fill: 'white'
+        fill: 'white',
       }),
       React.createElement('rect', {
         key: '3',
@@ -291,8 +289,8 @@ export const availableBlocks: BlockType[] = [
         y: '4.5',
         width: '4',
         height: '1',
-        fill: 'white'
-      })
+        fill: 'white',
+      }),
     ]),
     component: {
       type: 'container',
@@ -315,11 +313,10 @@ export const availableBlocks: BlockType[] = [
             textAlign: 'center',
           },
           attributes: {},
-        }
+        },
       ],
     },
   },
-
   // Footer Block
   {
     id: 'footer',
@@ -327,7 +324,7 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('rect', {
         key: '1',
@@ -335,7 +332,7 @@ export const availableBlocks: BlockType[] = [
         y: '13',
         width: '16',
         height: '4',
-        fill: 'currentColor'
+        fill: 'currentColor',
       }),
       React.createElement('rect', {
         key: '2',
@@ -343,7 +340,7 @@ export const availableBlocks: BlockType[] = [
         y: '14.5',
         width: '6',
         height: '1',
-        fill: 'white'
+        fill: 'white',
       }),
       React.createElement('rect', {
         key: '3',
@@ -351,8 +348,8 @@ export const availableBlocks: BlockType[] = [
         y: '14.5',
         width: '4',
         height: '1',
-        fill: 'white'
-      })
+        fill: 'white',
+      }),
     ]),
     component: {
       type: 'container',
@@ -370,18 +367,17 @@ export const availableBlocks: BlockType[] = [
         {
           id: '',
           type: 'text',
-          content: '<p style="margin: 0 0 10px 0; font-size: 14px;">© 2025 Your Company Name. All rights reserved.</p><p style="margin: 0; font-size: 12px; opacity: 0.8;">123 Main Street, City, State 12345 | contact@yourcompany.com</p>',
+          content: '<p style="margin: 0 0 10px 0; font-size: 14px;">© 2025 Your Company Name. All rights reserved.<p><p style="margin: 0; font-size: 12px; opacity: 0.8;">123 Main Street, City, State 12345 | contact@yourcompany.com</p>',
           styles: {
             color: 'white',
             textAlign: 'center',
             fontSize: '14px',
           },
           attributes: {},
-        }
+        },
       ],
     },
   },
-
   // 1/3 Section (One-Third + Two-Thirds)
   {
     id: 'section-1-3',
@@ -389,7 +385,7 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('rect', {
         key: '1',
@@ -398,17 +394,17 @@ export const availableBlocks: BlockType[] = [
         width: '5',
         height: '12',
         fill: 'currentColor',
-        fillOpacity: '0.3'
+        fillOpacity: '0.4',
       }),
       React.createElement('rect', {
         key: '2',
-        x: '9',
+        x: '7',
         y: '4',
         width: '9',
         height: '12',
         fill: 'currentColor',
-        fillOpacity: '0.6'
-      })
+        fillOpacity: '0.6',
+      }),
     ]),
     component: {
       type: 'row',
@@ -449,7 +445,6 @@ export const availableBlocks: BlockType[] = [
       ],
     },
   },
-
   // 3/7 Section (Three-Sevenths + Four-Sevenths)
   {
     id: 'section-3-7',
@@ -457,7 +452,7 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('rect', {
         key: '1',
@@ -466,17 +461,17 @@ export const availableBlocks: BlockType[] = [
         width: '6',
         height: '12',
         fill: 'currentColor',
-        fillOpacity: '0.4'
+        fillOpacity: '0.4',
       }),
       React.createElement('rect', {
         key: '2',
-        x: '10',
+        x: '8',
         y: '4',
         width: '8',
         height: '12',
         fill: 'currentColor',
-        fillOpacity: '0.6'
-      })
+        fillOpacity: '0.6',
+      }),
     ]),
     component: {
       type: 'row',
@@ -517,7 +512,6 @@ export const availableBlocks: BlockType[] = [
       ],
     },
   },
-
   // Quote Block
   {
     id: 'quote',
@@ -525,11 +519,11 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
       React.createElement('path', {
         key: '1',
-        d: 'M3 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm0 8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm10-8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm0 8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z'
+        d: 'M3 6c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm0 8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm10-8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm0 8c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z',
       }),
       React.createElement('rect', {
         key: '2',
@@ -538,8 +532,8 @@ export const availableBlocks: BlockType[] = [
         width: '14',
         height: '2',
         fill: 'currentColor',
-        fillOpacity: '0.3'
-      })
+        fillOpacity: '0.3',
+      }),
     ]),
     component: {
       type: 'container',
@@ -578,11 +572,10 @@ export const availableBlocks: BlockType[] = [
             margin: '0',
           },
           attributes: {},
-        }
+        },
       ],
     },
   },
-
   // List Items Block
   {
     id: 'list',
@@ -590,9 +583,9 @@ export const availableBlocks: BlockType[] = [
     icon: React.createElement('svg', {
       className: 'block-icon',
       viewBox: '0 0 20 20',
-      fill: 'currentColor'
+      fill: 'currentColor',
     }, [
-      React.createElement('circle', {
+     React.createElement('circle', {
         key: '1',
         cx: '4',
         cy: '6',

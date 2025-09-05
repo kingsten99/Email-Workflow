@@ -93,7 +93,7 @@ const LayersPanel: React.FC<LayersPanelProps> = ({
             }}
             title="Delete"
           >
-            🗑️
+            Del
           </button>
         </div>
       </div>

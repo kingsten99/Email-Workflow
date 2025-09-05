@@ -13,11 +13,12 @@ const BlocksPanel: React.FC<BlocksPanelProps> = ({ onAddComponent, selectedCompo
     const newComponent: EmailComponent = {
       ...block.component,
       id: generateId(),
-      children: block.component.children?.map(child => ({
+      children: block.component.children?.map((child: EmailComponent) => ({ // Specify the type here
         ...child,
         id: generateId(),
-      })),
+      })) || [], // Fallback to an empty array if children is undefined
     };
+
     onAddComponent(newComponent);
   };
 

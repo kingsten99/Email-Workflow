@@ -75,17 +75,19 @@ const Canvas: React.FC<CanvasProps> = ({
       
       // Check if it's a new block being added (from BlocksPanel)
       const blockData = e.dataTransfer.getData('application/json');
+
       if (blockData) {
-        const block: BlockType = JSON.parse(blockData);
-        const newComponent: EmailComponent = {
-          ...block.component,
-          id: generateId(),
-          children: block.component.children?.map(child => ({
-            ...child,
-            id: generateId(),
-          })),
-        };
-        onAddComponent(newComponent);
+          const block: BlockType = JSON.parse(blockData);
+          const newComponent: EmailComponent = {
+              ...block.component,
+              id: generateId(),
+              children: block.component.children?.map((child: EmailComponent) => ({ // Specify the type here
+                  ...child,
+                  id: generateId(),
+              })) || [], // Use an empty array if children is undefined
+          };
+
+          onAddComponent(newComponent);
       }
     } catch (error) {
       console.error('Error handling drop:', error);
@@ -259,18 +261,21 @@ const Canvas: React.FC<CanvasProps> = ({
 
   // Copy component function
   const copyComponent = (component: EmailComponent) => {
-    const newComponent: EmailComponent = {
-      ...component,
-      id: generateId(),
-      children: component.children?.map(child => ({
-        ...child,
-        id: generateId(),
-      })),
-    };
-    
-    // Enter copy mode
-    setCopyMode({ isActive: true, component: newComponent });
-    onSelectComponent(null); // Deselect current component
+      const newComponent: EmailComponent = {
+          ...component,
+          id: generateId(),
+          children: component.children?.map((child: EmailComponent) => ({ // Specify the type here
+              ...child,
+              id: generateId(),
+          })) || [], // Use an empty array if children is undefined
+      };
+
+      // Enter copy mode
+      setCopyMode({ 
+          isActive: true, 
+          component: newComponent 
+      });
+      onSelectComponent(null); // Deselect current component
   };
 
   // Action buttons component - GrapesJS style toolbar
@@ -420,7 +425,7 @@ const Canvas: React.FC<CanvasProps> = ({
             tabIndex={0}
             {...dataAttributes}
           >
-            <div style={{ position: 'relative', display: 'inline-block' }}>
+            <div style={{ position: 'relative', wordWrap: 'break-word' }}>
               <div
                 style={baseStyles}
                 onDoubleClick={handleDoubleClick}
@@ -491,28 +496,32 @@ const Canvas: React.FC<CanvasProps> = ({
       case 'row':
       case 'column':
         const handleContainerDrop = (e: React.DragEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          try {
-            const blockData = e.dataTransfer.getData('application/json');
-            if (blockData) {
-              const block: BlockType = JSON.parse(blockData);
-              const newComponent: EmailComponent = {
-                ...block.component,
-                id: generateId(),
-                children: block.component.children?.map(child => ({
-                  ...child,
-                  id: generateId(),
-                })),
-              };
-              
-              // Add as child to this container
-              const updatedChildren = [...(component.children || []), newComponent];
-              onUpdateComponent(component.id, { children: updatedChildren });
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+                const blockData = e.dataTransfer.getData('application/json');
+
+                if (blockData) {
+                    const block: BlockType = JSON.parse(blockData);
+                    const newComponent: EmailComponent = {
+                        ...block.component,
+                        id: generateId(),
+                        children: block.component.children?.map((child: EmailComponent) => ({ // Specify the type here
+                            ...child,
+                            id: generateId(),
+                        })) || [], // Use an empty array if children is undefined
+                    };
+
+                    // Add as child to this container
+                    const updatedChildren = [
+                        ...(component.children || []),
+                        newComponent,
+                    ];
+                    onUpdateComponent(component.id, { children: updatedChildren });
+                }
+            } catch (error) {
+                console.error('Error handling container drop:', error);
             }
-          } catch (error) {
-            console.error('Error handling container drop:', error);
-          }
         };
 
         const handleContainerDragOver = (e: React.DragEvent) => {
@@ -523,42 +532,41 @@ const Canvas: React.FC<CanvasProps> = ({
 
         return (
           <div
-            key={component.id}
-            className={wrapperClasses}
-            style={{ 
-              ...wrapperStyles, 
-              ...baseStyles,
-              minHeight: component.children?.length === 0 ? '60px' : 'auto',
-            }}
-            onClick={handleClick}
-            onKeyDown={handleKeyDown}
-            onDrop={handleContainerDrop}
-            onDragOver={handleContainerDragOver}
-            tabIndex={0}
-            {...dataAttributes}
+              key={component.id}
+              className={wrapperClasses}
+              style={{
+                  ...wrapperStyles,
+                  ...baseStyles,
+                  minHeight: component.children?.length === 0 ? '60px' : 'auto',
+              }}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              onDrop={handleContainerDrop}
+              onDragOver={handleContainerDragOver}
+              tabIndex={0}
+              {...dataAttributes}
           >
-            {component.children && component.children.length > 0 
-              ? component.children.map(child => renderComponent(child))
-              : (
-                  <div style={{ 
-                    color: isSelected ? '#667eea' : '#9ca3af', 
-                    fontStyle: 'italic', 
-                    padding: '20px',
-                    textAlign: 'center',
-                    background: isSelected ? 'rgba(102, 126, 234, 0.1)' : 'rgba(156, 163, 175, 0.05)',
-                    borderRadius: '6px',
-                    margin: '4px',
-                    transition: 'all 0.2s ease',
-                    fontSize: '14px'
+              {component.children && component.children.length > 0 ? (
+                  component.children.map((child: EmailComponent) => renderComponent(child)) // Specify type here
+              ) : (
+                  <div style={{
+                      color: isSelected ? '#667eea' : '#9ca3af',
+                      fontStyle: 'italic',
+                      padding: '20px',
+                      textAlign: 'center',
+                      background: isSelected ? 'rgba(102, 126, 234, 0.1)' : 'rgba(156, 163, 175, 0.05)',
+                      borderRadius: '6px',
+                      margin: '4px',
+                      transition: 'all 0.2s ease',
+                      fontSize: '14px',
                   }}>
-                    {isSelected ? '📦 Drop components here or click blocks to add' : `Empty ${component.type} - click to select and add content`}
+                      {isSelected ? '📦 Drop components here or click blocks to add' : `Empty ${component.type} - click to select and add content`}
                   </div>
-                )
-            }
-            {isSelected && <ActionButtons component={component} />}
-            {isSelected && <ResizeHandles component={component} />}
+              )}
+              {isSelected && <ActionButtons component={component} />}
+              {isSelected && <ResizeHandles component={component} />}
           </div>
-        );
+      );
 
       default:
         return (

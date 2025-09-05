@@ -39,6 +39,8 @@ const Dashboard: React.FC = () => {
       setStats(dashboardStats);
       setTemplates(emailTemplates);
       setError(null);
+      console.log('Users by Role:', dashboardStats.usersByRole);
+      console.log('Users by dashboardStats:', dashboardStats);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setError('Failed to load dashboard data');
@@ -180,8 +182,28 @@ const Dashboard: React.FC = () => {
             <span className="role-count">{stats?.usersByRole?.manager || 0}</span>
           </div>
           <div className="role-stat">
-            <span className="role-name">Employee:</span>
-            <span className="role-count">{stats?.usersByRole?.employee || 0}</span>
+            <span className="role-name">Vice President:</span>
+            <span className="role-count">{stats?.usersByRole?.vp || 0}</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-name">Software Engineer:</span>
+            <span className="role-count">{stats?.usersByRole?.softwareEngineer || 0}</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-name">Hr:</span>
+            <span className="role-count">{stats?.usersByRole?.hr || 0}</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-name">product Manager:</span>
+            <span className="role-count">{stats?.usersByRole?.productManager || 0}</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-name">Tester:</span>
+            <span className="role-count">{stats?.usersByRole?.tester || 0}</span>
+          </div>
+          <div className="role-stat">
+            <span className="role-name">Business Analyst:</span>
+            <span className="role-count">{stats?.usersByRole?.ba || 0}</span>
           </div>
         </div>
       </div>

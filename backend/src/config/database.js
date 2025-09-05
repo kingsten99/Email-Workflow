@@ -10,7 +10,7 @@ console.log('  - Password set:', !!process.env.DB_PASSWORD);
 // Database configuration
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
+  user: process.env.DB_USER || 'root', 
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'workflow_platform',
   charset: 'utf8mb4',
@@ -24,7 +24,7 @@ const connection = mysql.createConnection(dbConfig);
 // Connect to database
 connection.connect((err) => {
   if (err) {
-    console.error('❌ Database connection failed:', err.message);
+    console.error('Database connection failed:', err.message);
     console.error('❌ Full error:', err);
     process.exit(1);
   }

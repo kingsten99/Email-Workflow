@@ -72,40 +72,45 @@ app.get('/api/users', (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  console.log('🔍 Health check endpoint called');
+  console.log('Health check endpoint called');
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // Dashboard stats endpoint
 app.get('/api/dashboard-stats', (req, res) => {
-  console.log('🔍 Dashboard stats endpoint called at', new Date().toISOString());
+  console.log('Dashboard stats endpoint called at', new Date().toISOString());
   
   // Test database connection first
   db.query('SELECT 1 as test', (err, testResult) => {
     if (err) {
-      console.error('❌ Database connection test failed:', err);
+      console.error('Database connection test failed:', err);
       return res.status(500).json({ error: 'Database connection failed: ' + err.message });
     }
     
-    console.log('✅ Database connection test passed', testResult);
+    console.log('Database connection test passed', testResult);
     
     const userCountQuery = `
       SELECT 
         COUNT(*) as totalUsers,
         SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as adminCount,
         SUM(CASE WHEN role = 'manager' THEN 1 ELSE 0 END) as managerCount,
-        SUM(CASE WHEN role = 'employee' THEN 1 ELSE 0 END) as employeeCount
+        SUM(CASE WHEN role = 'software_engineer' THEN 1 ELSE 0 END) as softwareEngineerCount,
+        SUM(CASE WHEN role = 'vp' THEN 1 ELSE 0 END) as vpCount,
+        SUM(CASE WHEN role = 'hr' THEN 1 ELSE 0 END) as hrCount,
+        SUM(CASE WHEN role = 'product_manager' THEN 1 ELSE 0 END) as productManagerCount,
+        SUM(CASE WHEN role = 'tester' THEN 1 ELSE 0 END) as testerCount,
+        SUM(CASE WHEN role = 'ba' THEN 1 ELSE 0 END) as baCount
       FROM users
     `;
     
-    console.log('🔍 Executing user count query...');
+    console.log('Executing user count query...');
     db.query(userCountQuery, (err, userResults) => {
       if (err) {
-        console.error('❌ User stats error:', err);
+        console.error('User stats error:', err);
         return res.status(500).json({ error: 'User query failed: ' + err.message });
       }
       
-      console.log('✅ User query completed:', userResults);
+      console.log('User query completed:', userResults);
       
       const templateCountQuery = `
         SELECT 
@@ -115,14 +120,14 @@ app.get('/api/dashboard-stats', (req, res) => {
         FROM email_template_drafts
       `;
       
-      console.log('🔍 Executing template count query...');
+      console.log('Executing template count query...');
       db.query(templateCountQuery, (err, templateResults) => {
         if (err) {
-          console.error('❌ Template stats error:', err);
+          console.error('Template stats error:', err);
           return res.status(500).json({ error: 'Template query failed: ' + err.message });
         }
         
-        console.log('✅ Template query completed:', templateResults);
+        console.log('Template query completed:', templateResults);
         
         const userStats = userResults[0];
         const templateStats = templateResults[0];
@@ -133,7 +138,12 @@ app.get('/api/dashboard-stats', (req, res) => {
           usersByRole: {
             admin: userStats.adminCount || 0,
             manager: userStats.managerCount || 0,
-            employee: userStats.employeeCount || 0
+            vp: userStats.vpCount || 0,
+            softwareEngineer: userStats.softwareEngineerCount || 0,
+            hr: userStats.hrCount || 0,
+            productManager: userStats.productManagerCount || 0,
+            tester: userStats.testerCount || 0,
+            ba: userStats.baCount || 0
           },
           templatesByStatus: {
             draft: templateStats.draftCount || 0,
@@ -141,7 +151,7 @@ app.get('/api/dashboard-stats', (req, res) => {
           }
         };
         
-        console.log('📊 Final dashboard stats:', stats);
+        console.log('Final dashboard stats:', stats);
         res.json(stats);
       });
     });
@@ -163,11 +173,11 @@ app.get('/api/email-templates', (req, res) => {
 
 // Save/update template
 app.post('/api/templates', async (req, res) => {
-  console.log('📧 Saving template...');
+  console.log('Saving template...');
   
   const { template_name, created_by, subject, email_body, email_css, recipients, status } = req.body;
   
-  console.log('📧 Received template data:', {
+  console.log('Received template data:', {
     template_name,
     created_by,
     subject,
@@ -194,15 +204,15 @@ app.post('/api/templates', async (req, res) => {
     db.query(insertQuery, [template_name, created_by, subject, email_body, email_css || '', recipientsJson, status], 
       async (err, result) => {
         if (err) {
-          console.error('❌ Insert error:', err);
+          console.error('Insert error:', err);
           return res.status(500).json({ error: err.message });
         }
         
-        console.log('✅ Template created successfully! ID:', result.insertId);
+        console.log('Template created successfully! ID:', result.insertId);
         
         // If publishing, send emails
         if (status === 'published') {
-          console.log('📤 Publishing template - sending emails...');
+          console.log('Publishing template - sending emails...');
           try {
             const emailResult = await emailService.sendTemplateEmails({
               template_name,
@@ -213,14 +223,14 @@ app.post('/api/templates', async (req, res) => {
               recipients: recipients || []
             });
             
-            console.log('📧 Email sending completed:', emailResult);
+            console.log('Email sending completed:', emailResult);
             res.json({ 
               id: result.insertId, 
               message: 'Template published and emails sent successfully!',
               emailResult 
             });
           } catch (emailError) {
-            console.error('❌ Email sending error:', emailError);
+            console.error('Email sending error:', emailError);
             res.json({ 
               id: result.insertId, 
               message: 'Template saved but email sending failed: ' + emailError.message 
@@ -232,7 +242,7 @@ app.post('/api/templates', async (req, res) => {
       }
     );
   } catch (error) {
-    console.error('❌ Template creation error:', error);
+    console.error('Template creation error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -243,7 +253,7 @@ app.get('/api/templates/:id', (req, res) => {
   
   db.query('SELECT * FROM email_template_drafts WHERE id = ?', [templateId], (err, results) => {
     if (err) {
-      console.error('❌ Database error:', err);
+      console.error('Database error:', err);
       return res.status(500).json({ error: err.message });
     }
     if (results.length === 0) {
@@ -266,11 +276,11 @@ app.get('/api/templates/:id', (req, res) => {
 // Update existing template
 app.put('/api/templates/:id', async (req, res) => {
   const templateId = req.params.id;
-  console.log('📝 Updating template ID:', templateId);
+  console.log('Updating template ID:', templateId);
   
   const { template_name, created_by, subject, email_body, email_css, recipients, status } = req.body;
   
-  console.log('📧 Received update data:', {
+  console.log('Received update data:', {
     template_name,
     created_by,
     subject,
@@ -285,7 +295,7 @@ app.put('/api/templates/:id', async (req, res) => {
     const getQuery = 'SELECT * FROM email_template_drafts WHERE id = ?';
     db.query(getQuery, [templateId], (err, results) => {
       if (err) {
-        console.error('❌ Database error getting template:', err);
+        console.error('Database error getting template:', err);
         return res.status(500).json({ error: err.message });
       }
 
@@ -349,7 +359,7 @@ app.put('/api/templates/:id', async (req, res) => {
     
       db.query(updateQuery, updateValues, async (err, result) => {
         if (err) {
-          console.error('❌ Update error:', err);
+          console.error('Update error:', err);
           return res.status(500).json({ error: err.message });
         }
         
@@ -357,11 +367,11 @@ app.put('/api/templates/:id', async (req, res) => {
           return res.status(404).json({ error: 'Template not found' });
         }
         
-        console.log('✅ Template updated successfully! ID:', templateId);
+        console.log('Template updated successfully! ID:', templateId);
         
         // If publishing, send emails
         if (status === 'published') {
-          console.log('📤 Publishing template - sending emails...');
+          console.log('Publishing template - sending emails...');
           try {
             const emailResult = await emailService.sendTemplateEmails({
               template_name: template_name || existingTemplate.template_name,
@@ -372,14 +382,14 @@ app.put('/api/templates/:id', async (req, res) => {
               recipients: recipients || JSON.parse(existingTemplate.recipients || '[]')
             });
             
-            console.log('📧 Email sending completed:', emailResult);
+            console.log('Email sending completed:', emailResult);
             res.json({ 
               id: templateId, 
               message: 'Template updated and emails sent successfully!',
               emailResult 
             });
           } catch (emailError) {
-            console.error('❌ Email sending error:', emailError);
+            console.error('Email sending error:', emailError);
             res.json({ 
               id: templateId,
               message: 'Template updated but email sending failed: ' + emailError.message 
@@ -391,7 +401,7 @@ app.put('/api/templates/:id', async (req, res) => {
       });
     });
   } catch (error) {
-    console.error('❌ Template update error:', error);
+    console.error('Template update error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -400,35 +410,35 @@ app.put('/api/templates/:id', async (req, res) => {
 app.post('/api/publish-template/:id', async (req, res) => {
   const templateId = req.params.id;
   
-  console.log('🚀 Publishing template ID:', templateId);
+  console.log('Publishing template ID:', templateId);
   
   // Get template details
   db.query('SELECT * FROM email_template_drafts WHERE id = ?', [templateId], async (err, results) => {
     if (err) {
-      console.error('❌ Database error:', err);
+      console.error('Database error:', err);
       return res.status(500).json({ error: err.message });
     }
     if (results.length === 0) {
-      console.error('❌ Template not found');
+      console.error('Template not found');
       return res.status(404).json({ error: 'Template not found' });
     }
     
     const template = results[0];
-    console.log('📄 Found template:', template.template_name);
+    console.log('Found template:', template.template_name);
     
     // Update status to published
     db.query('UPDATE email_template_drafts SET status = "published", updated_at = NOW() WHERE id = ?', [templateId], async (err) => {
       if (err) {
-        console.error('❌ Update error:', err);
+        console.error('Update error:', err);
         return res.status(500).json({ error: err.message });
       }
       
-      console.log('✅ Template status updated to published');
+      console.log('Template status updated to published');
       
       // Send emails
       try {
         const recipients = JSON.parse(template.recipients || '[]');
-        console.log('👥 Sending emails to recipients:', recipients);
+        console.log('Sending emails to recipients:', recipients);
         
         const emailResult = await emailService.sendTemplateEmails({
           template_name: template.template_name,
@@ -439,10 +449,10 @@ app.post('/api/publish-template/:id', async (req, res) => {
           recipients: recipients
         });
         
-        console.log('📧 Email sending completed:', emailResult);
+        console.log('Email sending completed:', emailResult);
         res.json({ message: 'Template published and emails sent successfully!', result: emailResult });
       } catch (error) {
-        console.error('❌ Email sending error:', error);
+        console.error('Email sending error:', error);
         res.json({ message: 'Template published but email sending failed: ' + error.message });
       }
     });
@@ -451,7 +461,7 @@ app.post('/api/publish-template/:id', async (req, res) => {
 
 // Send test email endpoint
 app.post('/api/send-test-email', async (req, res) => {
-  console.log('📧 Sending test email...');
+  console.log('Sending test email...');
   
   const { template_name, subject, email_body, email_css, created_by, test_email } = req.body;
   
@@ -468,10 +478,10 @@ app.post('/api/send-test-email', async (req, res) => {
       created_by: created_by || 'Test User'
     }, test_email);
     
-    console.log('✅ Test email sent successfully');
+    console.log('Test email sent successfully');
     res.json({ message: 'Test email sent successfully!', result });
   } catch (error) {
-    console.error('❌ Test email error:', error);
+    console.error('Test email error:', error);
     res.status(500).json({ error: 'Failed to send test email: ' + error.message });
   }
 });
@@ -480,18 +490,18 @@ app.post('/api/send-test-email', async (req, res) => {
 app.delete('/api/templates/:id', (req, res) => {
   const templateId = req.params.id;
   
-  console.log('🗑️ Deleting template ID:', templateId);
+  console.log('Deleting template ID:', templateId);
   
   db.query('DELETE FROM email_template_drafts WHERE id = ?', [templateId], (err, result) => {
     if (err) {
-      console.error('❌ Delete error:', err);
+      console.error('Delete error:', err);
       return res.status(500).json({ error: err.message });
     }
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Template not found' });
     }
     
-    console.log('✅ Template deleted successfully');
+    console.log('Template deleted successfully');
     res.json({ message: 'Template deleted successfully.' });
   });
 });
@@ -505,7 +515,7 @@ app.post('/api/upload-image', upload.single('image'), (req, res) => {
 
     const fileUrl = `/uploads/${req.file.filename}`;
     
-    console.log('📸 Image uploaded:', {
+    console.log('Image uploaded:', {
       originalName: req.file.originalname,
       filename: req.file.filename,
       size: req.file.size,
@@ -522,7 +532,7 @@ app.post('/api/upload-image', upload.single('image'), (req, res) => {
       }]
     });
   } catch (error) {
-    console.error('❌ Upload error:', error);
+    console.error('Upload error:', error);
     res.status(500).json({ error: 'Upload failed: ' + error.message });
   }
 });
@@ -539,13 +549,13 @@ app.use((error, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log('📧 Email configuration:');
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log('Email configuration:');
   console.log(`  - SMTP Host: ${process.env.SMTP_HOST || 'smtp.gmail.com'}`);
   console.log(`  - SMTP User: ${process.env.SMTP_USER}`);
   console.log(`  - Database: ${process.env.DB_NAME || 'workflow_platform'}`);
   console.log('');
-  console.log('📊 Available endpoints:');
+  console.log('Available endpoint:');
   console.log('  - GET  /api/dashboard-stats');
   console.log('  - GET  /api/email-templates');
   console.log('  - POST /api/templates (Save/Publish)');
@@ -555,5 +565,5 @@ app.listen(PORT, () => {
   console.log('  - POST /api/send-test-email (Debug)');
   console.log('  - POST /api/upload-image');
   console.log('');
-  console.log('✅ Server ready for email template management!');
+  console.log('Server ready for email template management!');
 });

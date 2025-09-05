@@ -102,12 +102,12 @@ const EmailStudio: React.FC = () => {
   // Custom Editor Functions
   const addComponent = useCallback((component: EmailComponent) => {
     const newComponent: EmailComponent = {
-      ...component,
-      id: generateId(),
-      children: component.children?.map(child => ({
-        ...child,
+        ...component,
         id: generateId(),
-      })),
+        children: component.children?.map((child: EmailComponent) => ({ // Specify the type here
+            ...child,
+            id: generateId(),
+        })),
     };
     
     // If a container-type component is selected, add as child
@@ -280,18 +280,23 @@ const EmailStudio: React.FC = () => {
         }
         
         // If body is HTML, create a single HTML component
+        // If body is HTML, create a single HTML component
         const htmlComponent: EmailComponent = {
           id: generateId(),
           type: 'text',
-          content: template.body.replace(/<body[^>]*>|<\/body>/g, ''), // Remove body tags
+          content: template.body.replace(
+              /<body[^>]*>|<\/body>/g,
+              '' // Remove body tags
+          ),
           styles: {
-            fontSize: '16px',
-            color: '#333333',
-            padding: '20px',
-            fontFamily: 'Arial, sans-serif',
-            lineHeight: '1.6'
+              fontSize: '16px',
+              color: '#333333',
+              padding: '20px',
+              fontFamily: 'Arial, sans-serif',
+              lineHeight: '1.6',
           },
           attributes: {},
+          children: [] // Add this line to satisfy the required 'children' property
         };
         
         const htmlComponents = [htmlComponent];
@@ -394,7 +399,8 @@ const EmailStudio: React.FC = () => {
       /* Mobile-specific overrides */
       @media screen and (max-width: 600px) {
         body {
-          width: 375px !important;
+          // width: 375px !important;
+          width: 94% !important;
           max-width: 375px !important;
           padding: 10px !important;
         }
@@ -436,7 +442,8 @@ const EmailStudio: React.FC = () => {
       /* Apply mobile styles immediately for mobile preview */
       body {
         width: 375px !important;
-        max-width: 375px !important;
+        // max-width: 375px !important;
+        width: 94% !important;
         padding: 10px !important;
       }
       .email-container {
