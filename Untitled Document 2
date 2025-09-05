@@ -1,0 +1,16 @@
+frontend env
+
+REACT_APP_API_URL=http://localhost:3001/api
+
+backend env
+
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=@Pinkman10
+DB_NAME=workflow_platform
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=kingsten99@gmail.com
+SMTP_PASS=rowtdrjoqzuoutor
+PORT=3001
+
