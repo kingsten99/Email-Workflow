@@ -12,7 +12,7 @@ export const generateHTML = (components) => {
     const emailSafeStyles = {
       boxSizing: 'border-box',
       display: component.type === 'image' ? 'inline-block' : (component.styles.display || 'inline-block'),
-      margin: component.styles.margin || '10px',
+      margin: component.styles.margin || '0px',
       maxWidth: component.styles.maxWidth || '100%',
       verticalAlign: component.styles.verticalAlign || 'top', // Align components to top when inline
       ...component.styles, // Override with component-specific styles
@@ -145,6 +145,8 @@ export const generateCSS = (components) => {
 
     /* Email container */
     .email-container {
+      display: contents;
+      overflow-wrap: break-word;
       max-width: 600px;
       margin: 0 auto;
       background-color: #ffffff;

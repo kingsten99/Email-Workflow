@@ -569,10 +569,12 @@ body {
 
 /* Responsive Canvas Views */
 .canvas-container.desktop-view {
+  overflow-y: auto;
   max-width: 100%;
 }
 
 .canvas-container.mobile-view {
+  overflow-y: auto;
   max-width: 450px;
   margin: 0 auto;
 }
@@ -610,7 +612,7 @@ body {
 }
 
 .canvas-content [style*="flex:"] {
-  flex: var(--flex-value, 1) !important;
+  flex: var(--flex-value, 1);
 }
 
 /* Mobile view flex behavior */
@@ -1032,7 +1034,7 @@ body {
   box-shadow: var(--shadow-xl);
   max-width: 90vw;
   max-height: 90vh;
-  width: 800px;
+  width: 1000px;
   overflow: hidden;
   animation: slideUp 0.3s ease;
 }
@@ -1149,7 +1151,7 @@ body {
 .desktop-preview .preview-iframe {
   width: 100%;
   height: 100%;
-  max-width: 800px;
+  max-width: 900px;
 }
 
 .mobile-preview .preview-iframe {

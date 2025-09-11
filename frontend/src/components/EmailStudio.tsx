@@ -405,6 +405,8 @@ const EmailStudio: React.FC = () => {
           padding: 10px !important;
         }
         .email-container {
+          display: contents;
+          overflow-wrap: break-word;
           padding: 10px !important;
           margin: 0 !important;
           max-width: 355px !important;
@@ -447,6 +449,8 @@ const EmailStudio: React.FC = () => {
         padding: 10px !important;
       }
       .email-container {
+        display: contents;
+        overflow-wrap: break-word;
         padding: 10px !important;
         margin: 0 !important;
         max-width: 355px !important;

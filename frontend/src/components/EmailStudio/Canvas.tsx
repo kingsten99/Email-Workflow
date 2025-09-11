@@ -560,7 +560,7 @@ const Canvas: React.FC<CanvasProps> = ({
                       transition: 'all 0.2s ease',
                       fontSize: '14px',
                   }}>
-                      {isSelected ? '📦 Drop components here or click blocks to add' : `Empty ${component.type} - click to select and add content`}
+                      {isSelected ? 'Drop components here or click blocks to add' : `Empty ${component.type} - click to select and add content`}
                   </div>
               )}
               {isSelected && <ActionButtons component={component} />}
@@ -622,7 +622,7 @@ const Canvas: React.FC<CanvasProps> = ({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         style={{
-          borderColor: isDragOver ? '#667eea' : copyMode.isActive ? '#10b981' : 'transparent',
+          borderColor: isDragOver ? '#667eea' : copyMode.isActive ? '#10b981' : '#e2e8f0',
           backgroundColor: isDragOver ? 'rgba(102, 126, 234, 0.05)' : copyMode.isActive ? 'rgba(16, 185, 129, 0.05)' : 'transparent',
           cursor: copyMode.isActive ? 'copy' : 'default',
         }}

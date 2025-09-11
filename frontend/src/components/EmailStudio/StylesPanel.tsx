@@ -268,6 +268,15 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
                 placeholder="0"
               />
             </div>
+            <div className="control-group">
+              <label>Box Shadow</label>
+              <input
+                type="text"
+                value={localStyles.boxShadow || '0'}
+                onChange={(e) => handleStyleChange('boxShadow', e.target.value)}
+                placeholder="0"
+              />
+            </div>
           </div>
         </div>
 

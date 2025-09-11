@@ -106,6 +106,28 @@ export const availableBlocks = [
       },
     },
   },
+  // {
+  //   id: 'divider',
+  //   label: 'Divider',
+  //   icon: React.createElement('svg', {
+  //     className: 'block-icon',
+  //     viewBox: '0 0 20 20',
+  //     fill: 'currentColor',
+  //   }, React.createElement('path', {
+  //     d: 'M2 10h16v1H2v-1z',
+  //   })),
+  //   component: {
+  //     type: 'text',
+  //     content: 's',
+  //     styles: {
+  //       borderTop: '1px solid #e5e7eb',
+  //       margin: '20px 0',
+  //       height: '1px',
+  //       minWidth: '100%'
+  //     },
+  //     attributes: {},
+  //   },
+  // },
   {
     id: 'divider',
     label: 'Divider',
@@ -307,10 +329,26 @@ export const availableBlocks = [
         {
           id: '',
           type: 'text',
-          content: '<h1 style="margin: 0; font-size: 32px; font-weight: bold;">Your Company Name</h1><p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Welcome to our newsletter</p>',
+          content: "Your Company Name",
           styles: {
             color: 'white',
             textAlign: 'center',
+            margin: '0',
+            fontSize: '32px',
+            fontweight: 'bold'
+          },
+          attributes: {},
+        },
+        {
+          id: '',
+          type: 'text',
+          content: "Welcome to our newsletter",
+          styles: {
+            color: 'white',
+            textAlign: 'center',
+            margin: '10px 0 0 0',
+            fontSize: '16px',
+            opacity: '0.9',
           },
           attributes: {},
         },
@@ -367,11 +405,25 @@ export const availableBlocks = [
         {
           id: '',
           type: 'text',
-          content: '<p style="margin: 0 0 10px 0; font-size: 14px;">© 2025 Your Company Name. All rights reserved.<p><p style="margin: 0; font-size: 12px; opacity: 0.8;">123 Main Street, City, State 12345 | contact@yourcompany.com</p>',
+          content: "© 2025 Your Company Name. All rights reserved.",
           styles: {
             color: 'white',
             textAlign: 'center',
             fontSize: '14px',
+            margin: "0 0 10px 0",
+          },
+          attributes: {},
+        },
+        {
+          id: '',
+          type: 'text',
+          content: "123 Main Street, City, State 12345 | contact@yourcompany.com",
+          styles: {
+            color: 'white',
+            textAlign: 'center',
+            fontSize: '12px',
+            margin: "0",
+            opacity: "0.8",
           },
           attributes: {},
         },
@@ -577,72 +629,206 @@ export const availableBlocks = [
     },
   },
   // List Items Block
-  {
-    id: 'list',
-    label: 'List Items',
-    icon: React.createElement('svg', {
-      className: 'block-icon',
-      viewBox: '0 0 20 20',
-      fill: 'currentColor',
-    }, [
-     React.createElement('circle', {
-        key: '1',
-        cx: '4',
-        cy: '6',
-        r: '1',
-        fill: 'currentColor'
-      }),
-      React.createElement('circle', {
-        key: '2',
-        cx: '4',
-        cy: '10',
-        r: '1',
-        fill: 'currentColor'
-      }),
-      React.createElement('circle', {
-        key: '3',
-        cx: '4',
-        cy: '14',
-        r: '1',
-        fill: 'currentColor'
-      }),
-      React.createElement('rect', {
-        key: '4',
-        x: '7',
-        y: '5.5',
-        width: '10',
-        height: '1',
-        fill: 'currentColor'
-      }),
-      React.createElement('rect', {
-        key: '5',
-        x: '7',
-        y: '9.5',
-        width: '8',
-        height: '1',
-        fill: 'currentColor'
-      }),
-      React.createElement('rect', {
-        key: '6',
-        x: '7',
-        y: '13.5',
-        width: '9',
-        height: '1',
-        fill: 'currentColor'
-      })
-    ]),
-    component: {
-      type: 'text',
-      content: '<ul style="margin: 0; padding-left: 20px; line-height: 1.8;"><li style="margin-bottom: 8px;">First important point or feature</li><li style="margin-bottom: 8px;">Second key benefit or advantage</li><li style="margin-bottom: 8px;">Third compelling reason or detail</li><li style="margin-bottom: 0;">Final call-to-action item</li></ul>',
-      styles: {
-        fontSize: '16px',
-        color: '#374151',
-        padding: '15px',
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-      },
-      attributes: {},
+  // {
+  //   id: 'list',
+  //   label: 'List Items',
+  //   icon: React.createElement('svg', {
+  //     className: 'block-icon',
+  //     viewBox: '0 0 20 20',
+  //     fill: 'currentColor',
+  //   }, [
+  //    React.createElement('circle', {
+  //       key: '1',
+  //       cx: '4',
+  //       cy: '6',
+  //       r: '1',
+  //       fill: 'currentColor'
+  //     }),
+  //     React.createElement('circle', {
+  //       key: '2',
+  //       cx: '4',
+  //       cy: '10',
+  //       r: '1',
+  //       fill: 'currentColor'
+  //     }),
+  //     React.createElement('circle', {
+  //       key: '3',
+  //       cx: '4',
+  //       cy: '14',
+  //       r: '1',
+  //       fill: 'currentColor'
+  //     }),
+  //     React.createElement('rect', {
+  //       key: '4',
+  //       x: '7',
+  //       y: '5.5',
+  //       width: '10',
+  //       height: '1',
+  //       fill: 'currentColor'
+  //     }),
+  //     React.createElement('rect', {
+  //       key: '5',
+  //       x: '7',
+  //       y: '9.5',
+  //       width: '8',
+  //       height: '1',
+  //       fill: 'currentColor'
+  //     }),
+  //     React.createElement('rect', {
+  //       key: '6',
+  //       x: '7',
+  //       y: '13.5',
+  //       width: '9',
+  //       height: '1',
+  //       fill: 'currentColor'
+  //     })
+  //   ]),
+  //   component: {
+  //     type: 'text',
+  //     content: '<ul style="margin: 0; padding-left: 20px; line-height: 1.8;"><li style="margin-bottom: 8px;">First important point or feature</li><li style="margin-bottom: 8px;">Second key benefit or advantage</li><li style="margin-bottom: 8px;">Third compelling reason or detail</li><li style="margin-bottom: 0;">Final call-to-action item</li></ul>',
+  //     styles: {
+  //       fontSize: '16px',
+  //       color: '#374151',
+  //       padding: '15px',
+  //       backgroundColor: '#ffffff',
+  //       border: '1px solid #e5e7eb',
+  //       borderRadius: '8px',
+  //     },
+  //     attributes: {},
+  //   },
+  // },
+{
+  "id": "list",
+  "label": "List Items",
+  "icon": React.createElement('svg', {
+    className: 'block-icon',
+    viewBox: '0 0 20 20',
+    fill: 'currentColor'
+  }, [
+    React.createElement('circle', {
+      key: '1',
+      cx: '4',
+      cy: '6',
+      r: '1',
+      fill: 'currentColor'
+    }),
+    React.createElement('circle', {
+      key: '2',
+      cx: '4',
+      cy: '10',
+      r: '1',
+      fill: 'currentColor'
+    }),
+    React.createElement('circle', {
+      key: '3',
+      cx: '4',
+      cy: '14',
+      r: '1',
+      fill: 'currentColor'
+    }),
+    React.createElement('rect', {
+      key: '4',
+      x: '7',
+      y: '5.5',
+      width: '10',
+      height: '1',
+      fill: 'currentColor'
+    }),
+    React.createElement('rect', {
+      key: '5',
+      x: '7',
+      y: '9.5',
+      width: '8',
+      height: '1',
+      fill: 'currentColor'
+    }),
+    React.createElement('rect', {
+      key: '6',
+      x: '7',
+      y: '13.5',
+      width: '9',
+      height: '1',
+      fill: 'currentColor'
+    })
+  ]),
+  "component": {
+    "type": "container",
+    "content": "",
+    "styles": {
+      "padding": "15px",
+      "backgroundColor": "#ffffff",
+      "border": "1px solid #e5e7eb",
+      "borderRadius": "8px",
+      "width": "330px",
+      "height": "250px"
     },
-  },
+    "attributes": {},
+    "children": [
+      {
+        "id": "",
+        "type": "text",
+        "content": ". First important point or feature",
+        "styles": {
+          "margin": "0",
+          "fontSize": "16px",
+          "color": "#333333",
+          "lineHeight": "1.6",
+          "listStyleType": "disc",
+          "display": "list-item",
+          "margin-left": "20px",
+          "marginBottom": "8px"
+        },
+        "attributes": {}
+      },
+      {
+        "id": "",
+        "type": "text",
+        "content": "Second key benefit or advantage",
+        "styles": {
+          "margin": "0",
+          "fontSize": "16px",
+          "color": "#333333",
+          "lineHeight": "1.6",
+          "listStyleType": "disc",
+          "display": "list-item",
+          "margin-left": "20px",
+          "marginBottom": "8px"
+        },
+        "attributes": {}
+      },
+      {
+        "id": "",
+        "type": "text",
+        "content": "Third compelling reason or detail",
+        "styles": {
+          "margin": "0",
+          "fontSize": "16px",
+          "color": "#333333",
+          "lineHeight": "1.6",
+          "listStyleType": "disc",
+          "display": "list-item",
+          "margin-left": "20px",
+          "marginBottom": "8px"
+        },
+        "attributes": {}
+      },
+      {
+        "id": "",
+        "type": "text",
+        "content": "Final call-to-action item",
+        "styles": {
+          "margin": "0",
+          "fontSize": "16px",
+          "color": "#333333",
+          "lineHeight": "1.6",
+          "listStyleType": "disc",
+          "display": "list-item",
+          "margin-left": "20px",
+          "marginBottom": "0"
+        },
+        "attributes": {}
+      }
+    ]
+  }
+},
 ];

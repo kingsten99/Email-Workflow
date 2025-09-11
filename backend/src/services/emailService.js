@@ -225,7 +225,7 @@ class EmailService {
 
   // Send test email
   async sendTestEmail(templateData, testEmail) {
-    console.log(`📧 Sending test email to: ${testEmail}`);
+    console.log(`📧Sending test email to: ${testEmail}`);
 
     const userData = {
       name: 'Test User',
