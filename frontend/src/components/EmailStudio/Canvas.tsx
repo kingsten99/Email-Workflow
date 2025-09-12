@@ -481,7 +481,14 @@ const Canvas: React.FC<CanvasProps> = ({
               <a
                 href={component.attributes.href || '#'}
                 style={baseStyles}
-                onDoubleClick={handleDoubleClick}
+                onDoubleClick={() => {
+                  const newHref = prompt('Enter Your URL:', component.attributes.href || '');
+                  if (newHref !== null) {
+                    onUpdateComponent(component.id, {
+                      attributes: { ...component.attributes, href: newHref }
+                    });
+                  }
+                }}
                 onClick={(e) => e.preventDefault()}
               >
                 {component.content}

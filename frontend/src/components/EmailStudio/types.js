@@ -7,7 +7,15 @@ export class EmailComponent {
     this.type = type; // 'text' | 'image' | 'button' | 'container' | 'column' | 'row'
     this.content = content; // string
     this.styles = styles; // CSSProperties
-    this.attributes = attributes; // Record<string, any>
+    // this.attributes = attributes; // Record<string, any>
+    if (type === 'image') {
+      this.attributes = { src: '', alt: '', ...attributes};
+    } else if (type === 'button') {
+      this.attributes = { href: '', ...attributes};
+    } else {
+      this.attributes = attributes;
+    }
+
     this.children = children; // EmailComponent[] (optional)
   }
 }

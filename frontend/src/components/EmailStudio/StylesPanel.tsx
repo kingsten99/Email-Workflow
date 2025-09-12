@@ -8,10 +8,12 @@ interface StylesPanelProps {
 
 const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateComponent }) => {
   const [localStyles, setLocalStyles] = useState<Record<string, string | number>>({});
+  const [localContent, setLocalContent] = useState<string>('');
 
   useEffect(() => {
     if (selectedComponent) {
       setLocalStyles(selectedComponent.styles);
+      setLocalContent(selectedComponent.content || '');
     }
   }, [selectedComponent]);
 
@@ -28,6 +30,13 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
     
     const updatedAttributes = { ...selectedComponent.attributes, [attribute]: value };
     onUpdateComponent(selectedComponent.id, { attributes: updatedAttributes });
+  };
+
+  const handleContentChange = (value: string) => {
+    if (!selectedComponent) return;
+
+    setLocalContent(value);
+    onUpdateComponent(selectedComponent.id, { content: value });
   };
 
   if (!selectedComponent) {
@@ -124,6 +133,17 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
                   <option value="right">Right</option>
                   <option value="justify">Justify</option>
                 </select>
+              </div>
+              <div className="control-group">
+                  <label>Font Style</label>
+                  <select
+                      value={localStyles.fontStyle || 'normal'}
+                      onChange={(e) => handleStyleChange('fontStyle', e.target.value)}
+                  >
+                      <option value="normal">Normal</option>
+                      <option value="italic">Italic</option>
+                      <option value="oblique">Oblique</option>
+                  </select>
               </div>
               <div className="control-group">
                 <label>Line Height</label>
@@ -292,6 +312,15 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
                   value={selectedComponent.attributes.href || '#'}
                   onChange={(e) => handleAttributeChange('href', e.target.value)}
                   placeholder="https://example.com"
+                />
+              </div>
+              <div className="control-group">
+                <label>Text</label>
+                <input
+                  type="text"
+                  value={localContent || 'Button'}
+                  onChange={(e) => handleContentChange(e.target.value)}
+                  placeholder="Button text"
                 />
               </div>
             </div>

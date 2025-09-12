@@ -38,7 +38,7 @@ const VariablesPanel: React.FC<VariablesPanelProps> = ({
       
       {!selectedComponent && (
         <div className="variable-info">
-          <p>💡 Select a text component to insert variables</p>
+          <p>Select a text component to insert variables</p>
         </div>
       )}
       
