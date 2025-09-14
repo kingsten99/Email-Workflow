@@ -53,6 +53,102 @@ class EmailService {
     return cleanHtml;
   }
 
+  // Convert relative image URLs to absolute URLs for email
+  convertImageUrlsToAbsolute(html) {
+    const baseUrl = `http://localhost:${process.env.PORT || 3001}`;
+    
+    // Replace relative image URLs with absolute URLs
+    const updatedHtml = html.replace(
+      /src=["']\/uploads\/([^"']+)["']/g, 
+      `src="${baseUrl}/uploads/$1"`
+    );
+
+    console.log('🔗 Converting relative URLs to absolute URLs for email');
+    return updatedHtml;
+  }
+
+  // Convert images to base64 for embedding in emails (Optional - Better approach)
+  async convertImagesToBase64(html) {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Find all image sources
+    const imageRegex = /src=["']\/uploads\/([^"']+)["']/g;
+    let match;
+    let updatedHtml = html;
+
+    while ((match = imageRegex.exec(html)) !== null) {
+      const imagePath = path.join(__dirname, '../../uploads', match[1]);
+      
+      try {
+        if (fs.existsSync(imagePath)) {
+          const imageBuffer = fs.readFileSync(imagePath);
+          const ext = path.extname(match[1]).toLowerCase();
+          let mimeType = 'image/jpeg';
+          
+          switch (ext) {
+            case '.png': mimeType = 'image/png'; break;
+            case '.gif': mimeType = 'image/gif'; break;
+            case '.webp': mimeType = 'image/webp'; break;
+            default: mimeType = 'image/jpeg';
+          }
+          
+          const base64Image = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
+          updatedHtml = updatedHtml.replace(match[0], `src="${base64Image}"`);
+          console.log(`🖼️ Converted image to base64: ${match[1]}`);
+        } else {
+          console.log(`❌ Image file not found: ${imagePath}`);
+        }
+      } catch (error) {
+        console.error(`Failed to convert image to base64: ${match[1]}`, error);
+      }
+    }
+
+    return updatedHtml;
+  }
+
+  // Convert images to CID attachments for better email compatibility
+  async convertImagesToCID(html) {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Find all image sources
+    const imageRegex = /src=["']\/uploads\/([^"']+)["']/g;
+    let match;
+    let updatedHtml = html;
+    const attachments = [];
+    let cidCounter = 1;
+
+    while ((match = imageRegex.exec(html)) !== null) {
+      const imagePath = path.join(__dirname, '../../uploads', match[1]);
+      
+      try {
+        if (fs.existsSync(imagePath)) {
+          const cid = `image${cidCounter}`;
+          const filename = match[1];
+          
+          // Add to attachments array
+          attachments.push({
+            filename: filename,
+            path: imagePath,
+            cid: cid
+          });
+          
+          // Replace src with cid reference
+          updatedHtml = updatedHtml.replace(match[0], `src="cid:${cid}"`);
+          console.log(`📎 Added CID attachment: ${filename} as cid:${cid}`);
+          cidCounter++;
+        } else {
+          console.log(`❌ Image file not found: ${imagePath}`);
+        }
+      } catch (error) {
+        console.error(`Failed to process image for CID: ${match[1]}`, error);
+      }
+    }
+
+    return { html: updatedHtml, attachments };
+  }
+
   // Replace template variables with actual data
   replaceVariables(content, userData) {
     const template = Handlebars.compile(content);
@@ -173,7 +269,9 @@ class EmailService {
 
         // Clean and replace variables in content
         const cleanedHtml = this.cleanHtmlForEmail(email_body);
-        const personalizedContent = this.replaceVariables(cleanedHtml, userData);
+        // Use CID attachments for better email client compatibility
+        const { html: cidHtml, attachments } = await this.convertImagesToCID(cleanedHtml);
+        const personalizedContent = this.replaceVariables(cidHtml, userData);
         const personalizedSubject = this.replaceVariables(subject, userData);
 
         // Create proper email HTML with CSS embedded
@@ -183,7 +281,8 @@ class EmailService {
           from: `"${created_by}" <${process.env.SMTP_USER}>`,
           to: user.email,
           subject: personalizedSubject,
-          html: fullHtml
+          html: fullHtml,
+          attachments: attachments  // Add CID attachments
         };
 
         const result = await this.transporter.sendMail(mailOptions);
@@ -236,7 +335,9 @@ class EmailService {
     };
 
     const cleanedHtml = this.cleanHtmlForEmail(templateData.email_body);
-    const personalizedContent = this.replaceVariables(cleanedHtml, userData);
+    // Use CID attachments for better email client compatibility
+    const { html: cidHtml, attachments } = await this.convertImagesToCID(cleanedHtml);
+    const personalizedContent = this.replaceVariables(cidHtml, userData);
     const personalizedSubject = `[TEST] ${this.replaceVariables(templateData.subject, userData)}`;
 
     // Create proper email HTML with CSS embedded
@@ -246,7 +347,8 @@ class EmailService {
       from: `"${templateData.created_by}" <${process.env.SMTP_USER}>`,
       to: testEmail,
       subject: personalizedSubject,
-      html: fullHtml
+      html: fullHtml,
+      attachments: attachments  // Add CID attachments
     };
 
     const result = await this.transporter.sendMail(mailOptions);

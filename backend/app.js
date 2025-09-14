@@ -10,6 +10,69 @@ const fs = require('fs');
 const db = require('./src/config/database');
 const emailService = require('./src/services/emailService');
 
+// Helper function to convert JSON components to HTML
+function convertComponentsToHTML(componentsJson) {
+  try {
+    console.log('Converting components to HTML:', typeof componentsJson);
+    
+    // If it's already a string (HTML), return as is
+    if (typeof componentsJson === 'string') {
+      // Check if it's JSON by trying to parse it
+      try {
+        const parsed = JSON.parse(componentsJson);
+        if (Array.isArray(parsed)) {
+          // It's JSON components, convert to HTML
+          return componentsToHTML(parsed);
+        } else {
+          // It's not an array of components, treat as HTML
+          return componentsJson;
+        }
+      } catch (e) {
+        // It's not valid JSON, treat as HTML
+        return componentsJson;
+      }
+    }
+    
+    // If it's already an array of components
+    if (Array.isArray(componentsJson)) {
+      return componentsToHTML(componentsJson);
+    }
+    
+    // Fallback
+    return '<p>Unable to render email content</p>';
+  } catch (error) {
+    console.error('Error converting components to HTML:', error);
+    return '<p>Error rendering email content</p>';
+  }
+}
+
+// Simple component to HTML converter
+function componentsToHTML(components) {
+  return components.map(component => {
+    const styles = component.styles || {};
+    const styleString = Object.entries(styles)
+      .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
+      .join('; ');
+
+    switch (component.type) {
+      case 'text':
+        return `<div style="${styleString}">${component.content || ''}</div>`;
+      case 'image':
+        const src = component.attributes?.src || '';
+        const alt = component.attributes?.alt || '';
+        return `<img src="${src}" alt="${alt}" style="${styleString}" />`;
+      case 'button':
+        const href = component.attributes?.href || '#';
+        return `<a href="${href}" style="${styleString}">${component.content || 'Button'}</a>`;
+      case 'container':
+        const childrenHTML = component.children ? componentsToHTML(component.children) : '';
+        return `<div style="${styleString}">${childrenHTML}</div>`;
+      default:
+        return `<div style="${styleString}">${component.content || ''}</div>`;
+    }
+  }).join('');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -68,6 +131,49 @@ app.get('/api/users', (req, res) => {
     console.log('Found users:', results.length);
     res.json(results);
   });
+});
+
+// Get all uploaded images
+app.get('/api/images', (req, res) => {
+  console.log('Fetching uploaded images...');
+  try {
+    const uploadsPath = path.join(__dirname, 'uploads');
+    
+    // Check if uploads directory exists
+    if (!fs.existsSync(uploadsPath)) {
+      console.log('Uploads directory does not exist');
+      return res.json([]);
+    }
+
+    // Read directory contents
+    const files = fs.readdirSync(uploadsPath);
+    const imageFiles = files.filter(file => {
+      const ext = path.extname(file).toLowerCase();
+      return ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
+    });
+
+    // Get file details
+    const images = imageFiles.map(filename => {
+      const filePath = path.join(uploadsPath, filename);
+      const stats = fs.statSync(filePath);
+      return {
+        src: `/uploads/${filename}`,
+        name: filename,
+        size: stats.size,
+        type: path.extname(filename).toLowerCase(),
+        uploadedAt: stats.birthtime
+      };
+    });
+
+    // Sort by upload date (newest first)
+    images.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+
+    console.log('Found images:', images.length);
+    res.json(images);
+  } catch (error) {
+    console.error('Error reading uploads directory:', error);
+    res.status(500).json({ error: 'Failed to read images directory' });
+  }
 });
 
 // Health check endpoint
@@ -175,7 +281,7 @@ app.get('/api/email-templates', (req, res) => {
 app.post('/api/templates', async (req, res) => {
   console.log('Saving template...');
   
-  const { template_name, created_by, subject, email_body, email_css, recipients, status } = req.body;
+  const { template_name, created_by, subject, email_body, email_css, recipients, status, body } = req.body;
   
   console.log('Received template data:', {
     template_name,
@@ -184,12 +290,13 @@ app.post('/api/templates', async (req, res) => {
     email_body: email_body ? email_body.substring(0, 100) + '...' : 'empty',
     email_css: email_css ? 'CSS included' : 'No CSS',
     recipients,
-    status
+    status,
+    body: body ? 'JSON components included' : 'No JSON components'
   });
 
-  // Validate required fields
-  if (!template_name || !created_by || !subject || !email_body) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  // Validate required fields - prioritize JSON components in body field
+  if (!template_name || !created_by || !subject || !body) {
+    return res.status(400).json({ error: 'Missing required fields (template_name, created_by, subject, body)' });
   }
 
   const recipientsJson = JSON.stringify(recipients || []);
@@ -201,7 +308,10 @@ app.post('/api/templates', async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `;
     
-    db.query(insertQuery, [template_name, created_by, subject, email_body, email_css || '', recipientsJson, status], 
+    // Use JSON components for body field (this is what we want to store for canvas editing)
+    const bodyContent = body; // Always store JSON components
+    
+    db.query(insertQuery, [template_name, created_by, subject, bodyContent, email_css || '', recipientsJson, status], 
       async (err, result) => {
         if (err) {
           console.error('Insert error:', err);
@@ -214,10 +324,13 @@ app.post('/api/templates', async (req, res) => {
         if (status === 'published') {
           console.log('Publishing template - sending emails...');
           try {
+            // Convert JSON components to HTML for email sending
+            const htmlContent = convertComponentsToHTML(bodyContent);
+            
             const emailResult = await emailService.sendTemplateEmails({
               template_name,
               subject,
-              email_body,
+              email_body: htmlContent,
               email_css: email_css || '',
               created_by,
               recipients: recipients || []
@@ -278,7 +391,7 @@ app.put('/api/templates/:id', async (req, res) => {
   const templateId = req.params.id;
   console.log('Updating template ID:', templateId);
   
-  const { template_name, created_by, subject, email_body, email_css, recipients, status } = req.body;
+  const { template_name, created_by, subject, email_body, email_css, recipients, status, body } = req.body;
   
   console.log('Received update data:', {
     template_name,
@@ -287,7 +400,8 @@ app.put('/api/templates/:id', async (req, res) => {
     email_body: email_body ? email_body.substring(0, 100) + '...' : 'empty',
     email_css: email_css ? 'CSS included' : 'No CSS',
     recipients,
-    status
+    status,
+    body: body ? 'JSON components included' : 'No JSON components'
   });
 
   try {
@@ -319,9 +433,10 @@ app.put('/api/templates/:id', async (req, res) => {
         updateValues.push(subject);
       }
       
-      if (email_body !== undefined) {
+      // Always prioritize JSON components for body field
+      if (body !== undefined) {
         updateFields.push('body = ?');
-        updateValues.push(email_body);
+        updateValues.push(body);
       }
       
       if (email_css !== undefined) {
@@ -373,10 +488,14 @@ app.put('/api/templates/:id', async (req, res) => {
         if (status === 'published') {
           console.log('Publishing template - sending emails...');
           try {
+            // Use updated body or existing body for email content
+            const bodyContent = body || existingTemplate.body;
+            const htmlContent = convertComponentsToHTML(bodyContent);
+            
             const emailResult = await emailService.sendTemplateEmails({
               template_name: template_name || existingTemplate.template_name,
               subject: subject || existingTemplate.subject,
-              email_body: email_body || existingTemplate.body,
+              email_body: htmlContent,
               email_css: email_css || existingTemplate.email_css || '',
               created_by: created_by || existingTemplate.created_by || 'System',
               recipients: recipients || JSON.parse(existingTemplate.recipients || '[]')
@@ -440,10 +559,14 @@ app.post('/api/publish-template/:id', async (req, res) => {
         const recipients = JSON.parse(template.recipients || '[]');
         console.log('Sending emails to recipients:', recipients);
         
+        // Convert JSON components to HTML for email sending
+        const htmlContent = convertComponentsToHTML(template.body);
+        console.log('Converted HTML content preview:', htmlContent.substring(0, 200) + '...');
+        
         const emailResult = await emailService.sendTemplateEmails({
           template_name: template.template_name,
           subject: template.subject,
-          email_body: template.body,
+          email_body: htmlContent,
           email_css: template.email_css || '',
           created_by: template.created_by,
           recipients: recipients
@@ -462,18 +585,31 @@ app.post('/api/publish-template/:id', async (req, res) => {
 // Send test email endpoint
 app.post('/api/send-test-email', async (req, res) => {
   console.log('Sending test email...');
+  console.log('Request body:', req.body);
   
-  const { template_name, subject, email_body, email_css, created_by, test_email } = req.body;
+  const { template_name, subject, email_body, body, email_css, created_by, test_email } = req.body;
   
   if (!test_email) {
     return res.status(400).json({ error: 'Test email address is required' });
+  }
+
+  // Use email_body if provided, otherwise use body (which contains JSON components)
+  let htmlContent = email_body;
+  if (!htmlContent && body) {
+    // Convert JSON components to HTML
+    console.log('Converting body content to HTML for test email');
+    htmlContent = convertComponentsToHTML(body);
+  }
+
+  if (!htmlContent) {
+    htmlContent = '<p>Test email content</p>';
   }
   
   try {
     const result = await emailService.sendTestEmail({
       template_name: template_name || 'Test Template',
       subject: subject || 'Test Email',
-      email_body: email_body || '<p>Test email content</p>',
+      email_body: htmlContent,
       email_css: email_css || '',
       created_by: created_by || 'Test User'
     }, test_email);

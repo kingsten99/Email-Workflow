@@ -9,6 +9,7 @@ import Canvas from './EmailStudio/Canvas';
 import StylesPanel from './EmailStudio/StylesPanel';
 import LayersPanel from './EmailStudio/LayersPanel';
 import VariablesPanel from './EmailStudio/VariablesPanel';
+import ImageSelectionModal from './EmailStudio/ImageSelectionModal';
 
 // Import types and utilities
 import { EmailComponent, TemplateFormData, User, EmailTemplate } from './EmailStudio/types';
@@ -32,6 +33,10 @@ const EmailStudio: React.FC = () => {
     templateName: 'New Email Template',
     subject: 'Email Subject'
   });
+
+  // Image modal state
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImageComponent, setSelectedImageComponent] = useState<EmailComponent | null>(null);
 
   // Viewport mode for responsive preview
   const [viewportMode, setViewportMode] = useState<'desktop' | 'mobile'>('desktop');
@@ -267,6 +272,12 @@ const EmailStudio: React.FC = () => {
           console.log('Parsed components:', parsedComponents);
           if (Array.isArray(parsedComponents)) {
             console.log('Setting components from parsed data');
+            // Log image components to debug
+            parsedComponents.forEach(comp => {
+              if (comp.type === 'image') {
+                console.log('Image component found:', comp.id, 'src:', comp.attributes?.src);
+              }
+            });
             setComponents(parsedComponents);
             // Initialize history with loaded components
             setTimeout(() => {
@@ -352,6 +363,25 @@ const EmailStudio: React.FC = () => {
     }
   }, [selectedComponent, updateComponent]);
 
+  // Image double-click handler
+  const handleImageDoubleClick = useCallback((component: EmailComponent) => {
+    setSelectedImageComponent(component);
+    setImageModalOpen(true);
+  }, []);
+
+  const handleImageSelect = useCallback((imageUrl: string) => {
+    if (selectedImageComponent) {
+      updateComponent(selectedImageComponent.id, {
+        attributes: { 
+          ...selectedImageComponent.attributes, 
+          src: imageUrl 
+        }
+      });
+    }
+    setImageModalOpen(false);
+    setSelectedImageComponent(null);
+  }, [selectedImageComponent, updateComponent]);
+
   // Save Template
   const handleSave = useCallback(async (status: 'draft' | 'published') => {
     try {
@@ -394,6 +424,12 @@ const EmailStudio: React.FC = () => {
   const generatePreview = useCallback(() => {
     const html = generateHTML(components);
     const css = generateCSS(components);
+    
+    // Convert relative image URLs to absolute URLs for preview
+    const previewHtml = html.replace(
+      /src=["']\/uploads\/([^"']+)["']/g, 
+      `src="http://localhost:3001/uploads/$1"`
+    );
     
     const mobileStyles = previewViewport === 'mobile' ? `
       /* Mobile-specific overrides */
@@ -518,7 +554,7 @@ const EmailStudio: React.FC = () => {
       </head>
       <body>
         <div class="email-container">
-          ${html}
+          ${previewHtml}
         </div>
       </body>
       </html>
@@ -772,6 +808,7 @@ const EmailStudio: React.FC = () => {
               onDeleteComponent={deleteComponent}
               onAddComponent={addComponent}
               onReorderComponents={reorderComponents}
+              onImageDoubleClick={handleImageDoubleClick}
             />
           </div>
         </main>
@@ -871,6 +908,17 @@ const EmailStudio: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Image Selection Modal */}
+      <ImageSelectionModal
+        isOpen={imageModalOpen}
+        onClose={() => {
+          setImageModalOpen(false);
+          setSelectedImageComponent(null);
+        }}
+        onSelectImage={handleImageSelect}
+        currentImageUrl={selectedImageComponent?.attributes?.src || ''}
+      />
     </div>
   );
 };

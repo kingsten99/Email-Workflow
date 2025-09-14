@@ -10,6 +10,7 @@ interface CanvasProps {
   onDeleteComponent: (id: string) => void;
   onAddComponent: (component: EmailComponent) => void;
   onReorderComponents?: (newComponents: EmailComponent[]) => void;
+  onImageDoubleClick?: (component: EmailComponent) => void;
 }
 
 const Canvas: React.FC<CanvasProps> = ({
@@ -20,6 +21,7 @@ const Canvas: React.FC<CanvasProps> = ({
   onDeleteComponent,
   onAddComponent,
   onReorderComponents,
+  onImageDoubleClick,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -37,6 +39,16 @@ const Canvas: React.FC<CanvasProps> = ({
     isActive: boolean;
     component: EmailComponent | null;
   }>({ isActive: false, component: null });
+
+  // Helper function to convert relative URLs to absolute for display
+  const getDisplayImageUrl = (url: string) => {
+    console.log('Canvas getDisplayImageUrl input:', url);
+    if (!url) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04MCA2MEM4NiA2MCA5MCA2NCA5MCA3MEM5MCA3NiA4NiA4MCA4MCA4MEM3NCA4MCA3MCA3NiA3MCA3MEM3MCA2NCA3NCA2MCA4MCA2MFoiIGZpbGw9IiM5Q0EzQUYiLz4KUGF0aCBkPSJNNjAgMTAwTDE0MCA2MEwxNjAgMTAwSDYwWiIgZmlsbD0iIzZCNzI4MCIvPgo8L3N2Zz4K';
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    const result = `http://localhost:3001${url}`;
+    console.log('Canvas getDisplayImageUrl output:', result);
+    return result;
+  };
 
   const handleDrop = (e: React.DragEvent, insertIndex?: number) => {
     e.preventDefault();
@@ -449,15 +461,13 @@ const Canvas: React.FC<CanvasProps> = ({
           >
             <div style={{ position: 'relative', display: 'inline-block' }}>
               <img
-                src={component.attributes.src || ''}
-                alt={component.attributes.alt || ''}
+                src={getDisplayImageUrl(component.attributes.src)}
+                alt={component.attributes.alt || 'Image placeholder'}
                 style={baseStyles}
-                onDoubleClick={() => {
-                  const newSrc = prompt('Enter image URL:', component.attributes.src || '');
-                  if (newSrc !== null) {
-                    onUpdateComponent(component.id, {
-                      attributes: { ...component.attributes, src: newSrc }
-                    });
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  if (onImageDoubleClick) {
+                    onImageDoubleClick(component);
                   }
                 }}
               />
