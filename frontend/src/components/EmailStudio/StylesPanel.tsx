@@ -9,11 +9,13 @@ interface StylesPanelProps {
 const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateComponent }) => {
   const [localStyles, setLocalStyles] = useState<Record<string, string | number>>({});
   const [localContent, setLocalContent] = useState<string>('');
+  const [localAttributes, setLocalAttributes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (selectedComponent) {
       setLocalStyles(selectedComponent.styles);
       setLocalContent(selectedComponent.content || '');
+      setLocalAttributes(selectedComponent.attributes || {});
     }
   }, [selectedComponent]);
 
@@ -28,7 +30,8 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
   const handleAttributeChange = (attribute: string, value: string) => {
     if (!selectedComponent) return;
     
-    const updatedAttributes = { ...selectedComponent.attributes, [attribute]: value };
+    const updatedAttributes = { ...localAttributes, [attribute]: value };
+    setLocalAttributes(updatedAttributes);
     onUpdateComponent(selectedComponent.id, { attributes: updatedAttributes });
   };
 
@@ -309,18 +312,9 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
                 <label>URL</label>
                 <input
                   type="text"
-                  value={selectedComponent.attributes.href || '#'}
+                  value={localAttributes.href || ''}
                   onChange={(e) => handleAttributeChange('href', e.target.value)}
                   placeholder="https://example.com"
-                />
-              </div>
-              <div className="control-group">
-                <label>Text</label>
-                <input
-                  type="text"
-                  value={localContent || 'Button'}
-                  onChange={(e) => handleContentChange(e.target.value)}
-                  placeholder="Button text"
                 />
               </div>
             </div>
@@ -333,22 +327,32 @@ const StylesPanel: React.FC<StylesPanelProps> = ({ selectedComponent, onUpdateCo
             <h4 className="section-title">Image</h4>
             <div className="style-controls">
               <div className="control-group">
-                <label>Image URL</label>
-                <input
-                  type="text"
-                  value={selectedComponent.attributes.src || ''}
-                  onChange={(e) => handleAttributeChange('src', e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-              <div className="control-group">
                 <label>Alt Text</label>
                 <input
                   type="text"
-                  value={selectedComponent.attributes.alt || ''}
+                  value={localAttributes.alt || ''}
                   onChange={(e) => handleAttributeChange('alt', e.target.value)}
                   placeholder="Image description"
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* List Attributes */}
+        {selectedComponent.type === 'container' && selectedComponent.attributes?.listType && (
+          <div className="style-section">
+            <h4 className="section-title">List Options</h4>
+            <div className="style-controls">
+              <div className="control-group">
+                <label>List Type</label>
+                <select
+                  value={localAttributes.listType || 'unordered'}
+                  onChange={(e) => handleAttributeChange('listType', e.target.value)}
+                >
+                  <option value="unordered">Unordered List (•)</option>
+                  <option value="ordered">Ordered List (1.)</option>
+                </select>
               </div>
             </div>
           </div>

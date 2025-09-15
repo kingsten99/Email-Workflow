@@ -139,12 +139,15 @@ export const availableBlocks = [
       d: 'M2 10h16v1H2v-1z',
     })),
     component: {
-      type: 'container',
+      type: 'divider',
       content: '',
       styles: {
-        borderTop: '1px solid #e5e7eb',
+        borderTop: '1px dotted #e5e7eb',
         margin: '20px 0',
-        height: '1px',
+        height: '0',
+        width: '100%',
+        backgroundColor: 'transparent',
+        display: 'block',
       },
       attributes: {},
     },
@@ -168,11 +171,14 @@ export const availableBlocks = [
       }),
     ]),
     component: {
-      type: 'container',
+      type: 'spacer',
       content: '',
       styles: {
         height: '40px',
         backgroundColor: 'transparent',
+        border: 'none',
+        width: '100%',
+        display: 'block',
       },
       attributes: {},
     },
@@ -210,6 +216,7 @@ export const availableBlocks = [
         border: '1px solid #e5e7eb',
         borderRadius: '6px',
         minHeight: '100px',
+        height: 'auto',
       },
       attributes: {},
       children: [],
@@ -760,9 +767,12 @@ export const availableBlocks = [
       "border": "1px solid #e5e7eb",
       "borderRadius": "8px",
       "width": "330px",
-      "height": "250px"
+      "height": "auto",
+      "listType": "unordered"
     },
-    "attributes": {},
+    "attributes": {
+      "listType": "unordered"
+    },
     "children": [
       {
         "id": "",

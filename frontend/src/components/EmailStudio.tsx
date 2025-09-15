@@ -536,7 +536,23 @@ const EmailStudio: React.FC = () => {
             border: 2px solid #e2e8f0;
             padding: 20px;
             min-height: 400px;
-            ${previewViewport === 'mobile' ? 'max-width: 335px; margin: 0 auto;' : ''}
+            position: relative;
+            /* Match canvas content layout behavior */
+            line-height: 1.6;
+            word-wrap: break-word;
+            ${previewViewport === 'mobile' ? 'max-width: 335px; margin: 0 auto;' : 'max-width: 800px; margin: 0 auto;'}
+          }
+          
+          /* Ensure components maintain their inline-block layout like in canvas */
+          .email-container > * {
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+          }
+          
+          /* Preserve component spacing and positioning */
+          .email-container [id] {
+            box-sizing: border-box;
           }
           /* Ensure white backgrounds are visible */
           [style*="background-color: white"],
@@ -789,14 +805,15 @@ const EmailStudio: React.FC = () => {
                     Mobile
                   </button>
                 </div>
+                <div className="responsive-info">
+                  <span className="responsive-badge">
+                    📱 Responsive Design
+                  </span>
+                  <div className="responsive-tooltip">
+                    Edit once - adapts automatically to mobile using CSS media queries
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="canvas-info">
-              <svg className="canvas-icon" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v11a1 1 0 01-1 1H3a1 1 0 01-1-1V3zm2 2v7h12V5H4z"/>
-                <path d="M7 8h6v1H7V8zm0 2h4v1H7v-1z"/>
-              </svg>
-              Email Canvas
             </div>
           </div>
           <div className={`canvas-container ${viewportMode}-view`}>

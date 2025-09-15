@@ -27,6 +27,9 @@ const Canvas: React.FC<CanvasProps> = ({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isDraggingComponent, setIsDraggingComponent] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState<string>('');
+  const [originalDimensions, setOriginalDimensions] = useState<{width: number, height: number} | null>(null);
   const [resizeData, setResizeData] = useState<{
     componentId: string;
     startX: number;
@@ -184,6 +187,24 @@ const Canvas: React.FC<CanvasProps> = ({
   const handleMouseMove = (e: MouseEvent) => {
     if (!isResizing || !resizeData) return;
     
+    // Get canvas container boundaries
+    const canvasContainer = document.querySelector('.canvas-content') as HTMLElement;
+    if (!canvasContainer) return;
+    
+    const canvasRect = canvasContainer.getBoundingClientRect();
+    const canvasWidth = canvasRect.width;
+    const canvasHeight = canvasRect.height;
+    
+    // Get current component element to check its position
+    const componentElement = document.querySelector(`[data-id="${resizeData.componentId}"]`) as HTMLElement;
+    if (!componentElement) return;
+    
+    const componentRect = componentElement.getBoundingClientRect();
+    
+    // Calculate relative position within canvas
+    const componentLeft = componentRect.left - canvasRect.left;
+    const componentTop = componentRect.top - canvasRect.top;
+    
     const deltaX = e.clientX - resizeData.startX;
     const deltaY = e.clientY - resizeData.startY;
     
@@ -194,28 +215,61 @@ const Canvas: React.FC<CanvasProps> = ({
       case 'top-left':
         newWidth = Math.max(50, resizeData.startWidth - deltaX);
         newHeight = Math.max(30, resizeData.startHeight - deltaY);
+        // Ensure component doesn't go outside left boundary
+        newWidth = Math.min(newWidth, componentLeft + resizeData.startWidth);
+        // Ensure component doesn't go outside top boundary
+        newHeight = Math.min(newHeight, componentTop + resizeData.startHeight);
         break;
       case 'top-right':
         newWidth = Math.max(50, resizeData.startWidth + deltaX);
         newHeight = Math.max(30, resizeData.startHeight - deltaY);
+        // Ensure component doesn't exceed canvas right boundary
+        newWidth = Math.min(newWidth, canvasWidth - componentLeft);
+        // Ensure component doesn't go outside top boundary
+        newHeight = Math.min(newHeight, componentTop + resizeData.startHeight);
         break;
       case 'bottom-left':
         newWidth = Math.max(50, resizeData.startWidth - deltaX);
         newHeight = Math.max(30, resizeData.startHeight + deltaY);
+        // Ensure component doesn't go outside left boundary
+        newWidth = Math.min(newWidth, componentLeft + resizeData.startWidth);
+        // Ensure component doesn't exceed canvas bottom boundary
+        newHeight = Math.min(newHeight, canvasHeight - componentTop);
         break;
       case 'bottom-right':
         newWidth = Math.max(50, resizeData.startWidth + deltaX);
         newHeight = Math.max(30, resizeData.startHeight + deltaY);
+        // Ensure component doesn't exceed canvas right boundary
+        newWidth = Math.min(newWidth, canvasWidth - componentLeft);
+        // Ensure component doesn't exceed canvas bottom boundary
+        newHeight = Math.min(newHeight, canvasHeight - componentTop);
+        break;
+      case 'top':
+        newHeight = Math.max(30, resizeData.startHeight - deltaY);
+        // Ensure component doesn't go outside top boundary
+        newHeight = Math.min(newHeight, componentTop + resizeData.startHeight);
         break;
       case 'right':
         newWidth = Math.max(50, resizeData.startWidth + deltaX);
+        // Ensure component doesn't exceed canvas right boundary
+        newWidth = Math.min(newWidth, canvasWidth - componentLeft);
         break;
       case 'bottom':
         newHeight = Math.max(30, resizeData.startHeight + deltaY);
+        // Ensure component doesn't exceed canvas bottom boundary
+        newHeight = Math.min(newHeight, canvasHeight - componentTop);
+        break;
+      case 'left':
+        newWidth = Math.max(50, resizeData.startWidth - deltaX);
+        // Ensure component doesn't go outside left boundary
+        newWidth = Math.min(newWidth, componentLeft + resizeData.startWidth);
         break;
       case 'corner':
         newWidth = Math.max(50, resizeData.startWidth + deltaX);
         newHeight = Math.max(30, resizeData.startHeight + deltaY);
+        // Ensure component doesn't exceed canvas boundaries
+        newWidth = Math.min(newWidth, canvasWidth - componentLeft);
+        newHeight = Math.min(newHeight, canvasHeight - componentTop);
         break;
     }
     
@@ -347,6 +401,7 @@ const Canvas: React.FC<CanvasProps> = ({
   // Resize handles component
   const ResizeHandles: React.FC<{ component: EmailComponent }> = ({ component }) => (
     <>
+      {/* Corner handles */}
       <div
         className="resize-handle resize-top-left"
         onMouseDown={(e) => startResize(e, component.id, 'top-left')}
@@ -362,6 +417,24 @@ const Canvas: React.FC<CanvasProps> = ({
       <div
         className="resize-handle resize-bottom-right"
         onMouseDown={(e) => startResize(e, component.id, 'bottom-right')}
+      />
+      
+      {/* Side handles */}
+      <div
+        className="resize-handle resize-top-center"
+        onMouseDown={(e) => startResize(e, component.id, 'top')}
+      />
+      <div
+        className="resize-handle resize-right-center"
+        onMouseDown={(e) => startResize(e, component.id, 'right')}
+      />
+      <div
+        className="resize-handle resize-bottom-center"
+        onMouseDown={(e) => startResize(e, component.id, 'bottom')}
+      />
+      <div
+        className="resize-handle resize-left-center"
+        onMouseDown={(e) => startResize(e, component.id, 'left')}
       />
     </>
   );
@@ -412,11 +485,38 @@ const Canvas: React.FC<CanvasProps> = ({
     const handleDoubleClick = (e: React.MouseEvent) => {
       e.stopPropagation();
       if (component.type === 'text' || component.type === 'button') {
-        const newContent = prompt('Edit content:', component.content);
-        if (newContent !== null) {
-          onUpdateComponent(component.id, { content: newContent });
-        }
+        // Capture the original element's dimensions before switching to edit mode
+        const element = e.currentTarget as HTMLElement;
+        const rect = element.getBoundingClientRect();
+        setOriginalDimensions({
+          width: rect.width,
+          height: rect.height
+        });
+        
+        // Start inline editing
+        setEditingTextId(component.id);
+        setEditingContent(component.content || '');
       }
+    };
+
+    const handleTextEdit = (newContent: string) => {
+      onUpdateComponent(component.id, { content: newContent });
+      setEditingTextId(null);
+      setEditingContent('');
+    };
+
+    const handleTextKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleTextEdit(editingContent);
+      } else if (e.key === 'Escape') {
+        setEditingTextId(null);
+        setEditingContent('');
+      }
+    };
+
+    const handleTextBlur = () => {
+      handleTextEdit(editingContent);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -427,6 +527,8 @@ const Canvas: React.FC<CanvasProps> = ({
 
     switch (component.type) {
       case 'text':
+        const isEditingThis = editingTextId === component.id;
+        
         return (
           <div
             key={component.id}
@@ -438,8 +540,47 @@ const Canvas: React.FC<CanvasProps> = ({
             {...dataAttributes}
           >
             <div style={{ position: 'relative', wordWrap: 'break-word' }}>
+              {isEditingThis ? (
+                <textarea
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  onKeyDown={handleTextKeyDown}
+                  onBlur={handleTextBlur}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: originalDimensions ? `${originalDimensions.width}px` : baseStyles.width || '100%',
+                    height: originalDimensions ? `${originalDimensions.height}px` : baseStyles.height || 'auto',
+                    minHeight: originalDimensions ? `${originalDimensions.height}px` : baseStyles.minHeight || '40px',
+                    resize: 'none',
+                    border: '2px solid #007bff',
+                    borderRadius: '4px',
+                    padding: baseStyles.padding || '8px',
+                    margin: '0',
+                    fontFamily: baseStyles.fontFamily,
+                    fontSize: baseStyles.fontSize,
+                    fontWeight: baseStyles.fontWeight,
+                    color: baseStyles.color,
+                    backgroundColor: 'white',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    overflow: 'hidden',
+                    wordWrap: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    lineHeight: baseStyles.lineHeight,
+                    textAlign: baseStyles.textAlign as 'left' | 'right' | 'center',
+                    zIndex: 1000
+                  }}
+                  autoFocus
+                  placeholder="Enter your text..."
+                />
+              ) : null}
               <div
-                style={baseStyles}
+                style={{
+                  ...baseStyles,
+                  visibility: isEditingThis ? 'hidden' : 'visible'
+                }}
                 onDoubleClick={handleDoubleClick}
                 dangerouslySetInnerHTML={{ __html: component.content }}
               />
@@ -478,6 +619,8 @@ const Canvas: React.FC<CanvasProps> = ({
         );
 
       case 'button':
+        const isEditingButton = editingTextId === component.id;
+        
         return (
           <div 
             key={component.id} 
@@ -488,21 +631,67 @@ const Canvas: React.FC<CanvasProps> = ({
             {...dataAttributes}
           >
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              <a
-                href={component.attributes.href || '#'}
-                style={baseStyles}
-                onDoubleClick={() => {
-                  const newHref = prompt('Enter Your URL:', component.attributes.href || '');
-                  if (newHref !== null) {
-                    onUpdateComponent(component.id, {
-                      attributes: { ...component.attributes, href: newHref }
-                    });
-                  }
-                }}
-                onClick={(e) => e.preventDefault()}
-              >
-                {component.content}
-              </a>
+              {isEditingButton ? (
+                <input
+                  type="text"
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleTextEdit(editingContent);
+                    } else if (e.key === 'Escape') {
+                      setEditingTextId(null);
+                      setEditingContent('');
+                    }
+                  }}
+                  onBlur={handleTextBlur}
+                  style={{
+                    ...baseStyles,
+                    border: '2px solid #007bff',
+                    borderRadius: baseStyles.borderRadius,
+                    padding: baseStyles.padding,
+                    margin: baseStyles.margin,
+                    fontFamily: baseStyles.fontFamily,
+                    fontSize: baseStyles.fontSize,
+                    fontWeight: baseStyles.fontWeight,
+                    color: baseStyles.color,
+                    backgroundColor: baseStyles.backgroundColor,
+                    width: baseStyles.width || 'auto',
+                    height: baseStyles.height || 'auto',
+                    minWidth: baseStyles.minWidth || '100px',
+                    maxWidth: baseStyles.maxWidth || 'none',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    textAlign: baseStyles.textAlign as 'left' | 'right' | 'center',
+                    textDecoration: 'none',
+                    display: baseStyles.display || 'inline-block'
+                  }}
+                  autoFocus
+                  placeholder="Button text..."
+                />
+              ) : (
+                <a
+                  href={component.attributes.href || '#'}
+                  style={baseStyles}
+                  onDoubleClick={handleDoubleClick}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Right-click or Ctrl+click for URL editing
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    const newHref = prompt('Enter Your URL:', component.attributes.href || '');
+                    if (newHref !== null) {
+                      onUpdateComponent(component.id, {
+                        attributes: { ...component.attributes, href: newHref }
+                      });
+                    }
+                  }}
+                >
+                  {component.content}
+                </a>
+              )}
             </div>
             {isSelected && <ActionButtons component={component} />}
             {isSelected && <ResizeHandles component={component} />}
@@ -584,6 +773,69 @@ const Canvas: React.FC<CanvasProps> = ({
               {isSelected && <ResizeHandles component={component} />}
           </div>
       );
+
+      case 'divider':
+        const dividerWrapperStyles: React.CSSProperties = {
+          position: 'relative',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          display: 'block', // Block to take full width
+          width: '100%', // Full width of container
+          margin: baseStyles.margin || '20px 0', // Vertical margin
+          height: 'auto',
+        };
+        
+        return (
+          <div
+            key={component.id}
+            className={wrapperClasses}
+            style={dividerWrapperStyles}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            {...dataAttributes}
+          >
+            <hr
+              style={{
+                border: 'none',
+                borderTop: baseStyles.borderTop || '1px dotted #e5e7eb',
+                margin: '0',
+                height: '0',
+                width: '100%',
+                backgroundColor: 'transparent',
+              }}
+            />
+            {isSelected && <ActionButtons component={component} />}
+          </div>
+        );
+
+      case 'spacer':
+        const spacerWrapperStyles: React.CSSProperties = {
+          position: 'relative',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          display: 'block',
+          width: '100%',
+          height: baseStyles.height || '40px',
+          backgroundColor: 'transparent',
+          border: 'none',
+          margin: baseStyles.margin || '0',
+        };
+        
+        return (
+          <div
+            key={component.id}
+            className={wrapperClasses}
+            style={spacerWrapperStyles}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            {...dataAttributes}
+          >
+            {/* Just empty space - no visual elements */}
+            {isSelected && <ActionButtons component={component} />}
+          </div>
+        );
 
       default:
         return (
