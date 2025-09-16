@@ -736,6 +736,80 @@ const Canvas: React.FC<CanvasProps> = ({
           e.dataTransfer.dropEffect = 'copy';
         };
 
+        // Check if this is a list container
+        if (component.attributes?.listType) {
+          const ListTag = component.attributes.listType === 'ordered' ? 'ol' : 'ul';
+          const listChildren = component.children || [];
+          
+          return (
+            <div
+              key={component.id}
+              className={wrapperClasses}
+              style={wrapperStyles}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              onDrop={handleContainerDrop}
+              onDragOver={handleContainerDragOver}
+              tabIndex={0}
+              {...dataAttributes}
+            >
+              <div
+                style={{
+                  ...baseStyles,
+                  paddingLeft: '0px',
+                  margin: '0px',
+                  minHeight: listChildren.length === 0 ? '60px' : 'auto'
+                }}
+              >
+                {listChildren.length > 0 ? (
+                  listChildren.map((child: EmailComponent, index: number) => (
+                    <div key={child.id} style={{ 
+                      marginBottom: '8px',
+                      position: 'relative',
+                      paddingLeft: window.innerWidth <= 768 ? '20px' : '25px',
+                      lineHeight: '1.5'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        left: '5px',
+                        top: '5px',
+                        width: window.innerWidth <= 768 ? '16px' : '20px',
+                        fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+                        fontWeight: 'bold',
+                        color: '#333',
+                        lineHeight: '1.5',
+                        textAlign: 'left'
+                      }}>
+                        {component.attributes.listType === 'ordered' ? `${index + 1}.` : '•'}
+                      </span>
+                      <div style={{ lineHeight: '1.5' }}>
+                        {renderComponent(child)}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <li style={{
+                    color: isSelected ? '#667eea' : '#9ca3af',
+                    fontStyle: 'italic',
+                    padding: '20px',
+                    textAlign: 'center',
+                    background: isSelected ? 'rgba(102, 126, 234, 0.1)' : 'rgba(156, 163, 175, 0.05)',
+                    borderRadius: '6px',
+                    margin: '4px',
+                    transition: 'all 0.2s ease',
+                    fontSize: '14px',
+                    listStyle: 'none'
+                  }}>
+                    {isSelected ? 'Drop items here to create list items' : 'Empty list - click to select and add items'}
+                  </li>
+                )}
+              </div>
+              {isSelected && <ActionButtons component={component} />}
+              {isSelected && <ResizeHandles component={component} />}
+            </div>
+          );
+        }
+
         return (
           <div
               key={component.id}
@@ -907,7 +981,7 @@ const Canvas: React.FC<CanvasProps> = ({
                 color: '#10b981', 
                 fontWeight: 'bold' 
               }}>
-                📋 Click anywhere to place copied component
+                Click anywhere to place copied component
               </div>
             )}
             {isDragOver && (
@@ -916,7 +990,7 @@ const Canvas: React.FC<CanvasProps> = ({
                 color: '#667eea', 
                 fontWeight: 'bold' 
               }}>
-                📦 Drop your component here!
+                Drop your component here!
               </div>
             )}
           </div>

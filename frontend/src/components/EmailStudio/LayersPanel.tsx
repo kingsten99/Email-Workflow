@@ -22,19 +22,19 @@ const LayersPanel: React.FC<LayersPanelProps> = ({
   const getComponentIcon = (type: string) => {
     switch (type) {
       case 'text':
-        return '📝';
+        return 'TXT';
       case 'image':
-        return '🖼️';
+        return 'IMG';
       case 'button':
-        return '🔘';
+        return 'BTN';
       case 'container':
-        return '📦';
+        return 'BOX';
       case 'row':
-        return '↔️';
+        return 'SPAN';
       case 'column':
-        return '📏';
+        return 'SEP';
       default:
-        return '📄';
+        return 'SPC';
     }
   };
 

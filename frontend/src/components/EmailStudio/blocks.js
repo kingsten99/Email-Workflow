@@ -20,6 +20,7 @@ export const availableBlocks = [
         color: '#333333',
         padding: '10px',
         lineHeight: '1.5',
+        marginBottom: '15px',
       },
       attributes: {},
     },
@@ -43,6 +44,7 @@ export const availableBlocks = [
         color: '#333333',
         padding: '10px',
         lineHeight: '1.2',
+        marginBottom: '15px',
       },
       attributes: {},
     },
@@ -65,6 +67,7 @@ export const availableBlocks = [
         maxWidth: '300px',
         height: 'auto',
         display: 'block',
+        marginBottom: '15px',
       },
       attributes: {
         src: 'https://via.placeholder.com/300x200?text=Image',
@@ -100,6 +103,7 @@ export const availableBlocks = [
         cursor: 'pointer',
         textDecoration: 'none',
         display: 'inline-block',
+        marginBottom: '15px',
       },
       attributes: {
         href: '#',
@@ -217,6 +221,8 @@ export const availableBlocks = [
         borderRadius: '6px',
         minHeight: '100px',
         height: 'auto',
+        width: '100%',
+        boxSizing: 'border-box',
       },
       attributes: {},
       children: [],
@@ -330,6 +336,8 @@ export const availableBlocks = [
         color: 'white',
         textAlign: 'center',
         marginBottom: '20px',
+        width: '100%',
+        boxSizing: 'border-box',
       },
       attributes: {},
       children: [
@@ -406,6 +414,8 @@ export const availableBlocks = [
         textAlign: 'center',
         marginTop: '20px',
         fontSize: '14px',
+        width: '100%',
+        boxSizing: 'border-box',
       },
       attributes: {},
       children: [
@@ -766,9 +776,8 @@ export const availableBlocks = [
       "backgroundColor": "#ffffff",
       "border": "1px solid #e5e7eb",
       "borderRadius": "8px",
-      "width": "330px",
-      "height": "auto",
-      "listType": "unordered"
+      "width": "100%",
+      "height": "auto"
     },
     "attributes": {
       "listType": "unordered"
@@ -777,14 +786,13 @@ export const availableBlocks = [
       {
         "id": "",
         "type": "text",
-        "content": ". First important point or feature",
+        "content": "First important point or feature",
         "styles": {
           "margin": "0",
           "fontSize": "16px",
           "color": "#333333",
           "lineHeight": "1.6",
           "listStyleType": "disc",
-          "display": "list-item",
           "margin-left": "20px",
           "marginBottom": "8px"
         },
@@ -800,7 +808,6 @@ export const availableBlocks = [
           "color": "#333333",
           "lineHeight": "1.6",
           "listStyleType": "disc",
-          "display": "list-item",
           "margin-left": "20px",
           "marginBottom": "8px"
         },
@@ -816,7 +823,6 @@ export const availableBlocks = [
           "color": "#333333",
           "lineHeight": "1.6",
           "listStyleType": "disc",
-          "display": "list-item",
           "margin-left": "20px",
           "marginBottom": "8px"
         },
@@ -832,7 +838,6 @@ export const availableBlocks = [
           "color": "#333333",
           "lineHeight": "1.6",
           "listStyleType": "disc",
-          "display": "list-item",
           "margin-left": "20px",
           "marginBottom": "0"
         },

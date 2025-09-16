@@ -302,6 +302,31 @@ app.post('/api/templates', async (req, res) => {
   const recipientsJson = JSON.stringify(recipients || []);
   
   try {
+    // Check if template name already exists
+    const checkQuery = `
+      SELECT id, template_name FROM email_template_drafts 
+      WHERE template_name = ? AND template_name != ''
+    `;
+    
+    const existingTemplate = await new Promise((resolve, reject) => {
+      db.query(checkQuery, [template_name], (err, results) => {
+        if (err) {
+          console.error('Error checking for existing template:', err);
+          reject(err);
+        } else {
+          resolve(results[0]);
+        }
+      });
+    });
+    
+    if (existingTemplate) {
+      console.log('Template name already exists:', template_name);
+      return res.status(409).json({ 
+        error: 'Template name already exists', 
+        message: `A template with the name "${template_name}" already exists. Please choose a different name.` 
+      });
+    }
+    
     // Create new template
     const insertQuery = `
       INSERT INTO email_template_drafts (template_name, created_by, subject, body, email_css, recipients, status, created_at, updated_at)
@@ -469,8 +494,8 @@ app.put('/api/templates/:id', async (req, res) => {
         WHERE id = ?
       `;
       
-      console.log('🔧 Update query:', updateQuery);
-      console.log('🔧 Update values:', updateValues);
+      console.log('Update query:', updateQuery);
+      console.log('Update values:', updateValues);
     
       db.query(updateQuery, updateValues, async (err, result) => {
         if (err) {

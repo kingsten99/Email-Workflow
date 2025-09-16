@@ -14,13 +14,19 @@ const Dashboard: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const recipientOptions = [
-    { value: 'hr', label: 'HR Department' },
-    { value: 'manager', label: 'Managers' },
-    { value: 'employee', label: 'All Employees' },
-    { value: 'admin', label: 'Administrators' }
+    { value: 'admin', label: 'Admin' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'vp', label: 'Vice President' },
+    { value: 'softwareEngineer', label: 'Software Engineer' },
+    { value: 'hr', label: 'Hr' },
+    { value: 'productManager', label: 'product Manager' },
+    { value: 'tester', label: 'Tester' },
+    { value: 'ba', label: 'Business Analyst' }
   ];
 
   useEffect(() => {
@@ -83,50 +89,137 @@ const Dashboard: React.FC = () => {
     setSelectedTemplate(templateId);
     setSelectedRecipients([]);
     setSelectedUsers([]);
+    setPublishError(null);
+    setPublishLoading(false);
     setShowRecipientsModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowRecipientsModal(false);
+    setPublishError(null);
+    setPublishLoading(false);
   };
 
   const handleConfirmPublish = async () => {
     if (!selectedTemplate) return;
 
     try {
-      // Combine selected groups and individual users
-      const allRecipients = [...selectedRecipients, ...selectedUsers];
+      setPublishLoading(true);
+      setPublishError(null);
       
-      if (allRecipients.length === 0) {
-        alert('Please select at least one recipient');
+      // Get all unique user IDs from selected groups and individual users
+      const usersFromGroups = selectedRecipients.flatMap(groupRole => 
+        users.filter(user => user.role === groupRole).map(user => user.id)
+      );
+      const allUserIds = Array.from(new Set([...usersFromGroups, ...selectedUsers]));
+      
+      if (allUserIds.length === 0) {
+        setPublishError('Please select at least one recipient');
         return;
       }
 
-      // Update template with recipients and publish
+      // Convert user IDs to user names for storage
+      const recipientNames = allUserIds.map(userId => {
+        const user = users.find(u => u.id === userId);
+        return user ? user.name : null;
+      }).filter(name => name !== null);
+
+      // Update template with recipient names and publish
       await templateService.update(selectedTemplate, {
-        recipients: allRecipients,
+        recipients: recipientNames,
         status: 'published'
       });
 
       await loadDashboardData(); // Refresh data
       setShowRecipientsModal(false);
+      setSelectedRecipients([]);
+      setSelectedUsers([]);
       alert('Template published and emails sent successfully!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error publishing template:', err);
-      alert('Failed to publish template');
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to publish template. Please try again.';
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setPublishLoading(false);
     }
   };
 
+  const getUniqueRecipientCount = () => {
+    // Get all users from selected groups
+    const usersFromGroups = selectedRecipients.flatMap(groupRole => 
+      users.filter(user => user.role === groupRole).map(user => user.id)
+    );
+    
+    // Combine group users with individually selected users, removing duplicates
+    const allUniqueUserIds = Array.from(new Set([...usersFromGroups, ...selectedUsers]));
+    
+    return allUniqueUserIds.length;
+  };
+
   const handleRecipientToggle = (recipient: string) => {
+    const isCurrentlySelected = selectedRecipients.includes(recipient);
+    
     setSelectedRecipients(prev => 
-      prev.includes(recipient)
+      isCurrentlySelected
         ? prev.filter(r => r !== recipient)
         : [...prev, recipient]
     );
+
+    // Auto-select/deselect individual users based on group selection
+    const groupUsers = users.filter(user => user.role === recipient);
+    const groupUserIds = groupUsers.map(user => user.id);
+
+    setSelectedUsers(prev => {
+      if (isCurrentlySelected) {
+        // Deselecting group - remove all users of this role
+        return prev.filter(userId => !groupUserIds.includes(userId));
+      } else {
+        // Selecting group - add all users of this role (avoid duplicates)
+        const newUserIds = groupUserIds.filter(userId => !prev.includes(userId));
+        return [...prev, ...newUserIds];
+      }
+    });
   };
 
   const handleUserToggle = (userId: string) => {
+    const isCurrentlySelected = selectedUsers.includes(userId);
+    
     setSelectedUsers(prev => 
-      prev.includes(userId)
+      isCurrentlySelected
         ? prev.filter(u => u !== userId)
         : [...prev, userId]
     );
+
+    // Auto-toggle group selection based on individual user selections
+    const toggledUser = users.find(user => user.id === userId);
+    if (toggledUser) {
+      const groupUsers = users.filter(user => user.role === toggledUser.role);
+      const groupUserIds = groupUsers.map(user => user.id);
+      
+      setSelectedRecipients(prev => {
+        const isGroupSelected = prev.includes(toggledUser.role);
+        
+        if (isCurrentlySelected) {
+          // User was deselected - remove group selection
+          return prev.filter(r => r !== toggledUser.role);
+        } else {
+          // User was selected - check if all group users are now selected
+          const updatedSelectedUsers = selectedUsers.includes(userId) 
+            ? selectedUsers 
+            : [...selectedUsers, userId];
+          
+          const allGroupUsersSelected = groupUserIds.every(id => 
+            updatedSelectedUsers.includes(id)
+          );
+          
+          if (allGroupUsersSelected && !isGroupSelected) {
+            return [...prev, toggledUser.role];
+          }
+        }
+        
+        return prev;
+      });
+    }
   };
 
   if (loading) {
@@ -233,11 +326,6 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="template-content">
                   <p className="template-subject">{template.subject}</p>
-                  <p className="template-recipients">
-                    Recipients: {Array.isArray(template.recipients) 
-                      ? template.recipients.join(', ') 
-                      : 'None selected'}
-                  </p>
                   <p className="template-updated">
                     Updated: {new Date(template.updated_at).toLocaleDateString()}
                   </p>
@@ -272,15 +360,58 @@ const Dashboard: React.FC = () => {
 
       {/* Recipients Selection Modal */}
       {showRecipientsModal && (
-        <div className="modal-overlay" onClick={() => setShowRecipientsModal(false)}>
+        <div className="modal-overlay" onClick={publishLoading ? undefined : handleCloseModal}>
           <div className="modal-content recipients-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Loading Overlay */}
+            {publishLoading && (
+              <div className="modal-loading-overlay" style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                borderRadius: '8px'
+              }}>
+                <div className="loading-spinner" style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid #f3f3f3',
+                  borderTop: '4px solid #007bff',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  marginBottom: '15px'
+                }}></div>
+                <div style={{
+                  fontSize: '18px',
+                  fontWeight: '500',
+                  color: '#333',
+                  marginBottom: '8px'
+                }}>
+                  Sending Emails...
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#666',
+                  textAlign: 'center'
+                }}>
+                  Please wait while we publish your template and send emails to selected recipients.
+                </div>
+              </div>
+            )}
+            
             <div className="modal-header">
-              <h3>📧 Select Recipients</h3>
-              <button className="close-btn" onClick={() => setShowRecipientsModal(false)}>×</button>
+              <h3>Select Recipients</h3>
+              <button className="close-btn" onClick={handleCloseModal}>×</button>
             </div>
             <div className="modal-body">
               <div className="recipients-section">
-                <h4>👥 Recipient Groups</h4>
+                <h4>Recipient Groups</h4>
                 <div className="recipient-groups">
                   {recipientOptions.map((option) => (
                     <label key={option.value} className="checkbox-label">
@@ -296,7 +427,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className="recipients-section">
-                <h4>👤 Individual Users</h4>
+                <h4>Individual Users</h4>
                 <div className="individual-users">
                   {recipientOptions.map((group) => {
                     const groupUsers = users.filter(user => user.role === group.value);
@@ -325,19 +456,22 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="modal-footer">
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => setShowRecipientsModal(false)}
-              >
-                Cancel
-              </button>
-              <button 
-                className="btn btn-primary" 
-                onClick={handleConfirmPublish}
-                disabled={selectedRecipients.length === 0 && selectedUsers.length === 0}
-              >
-                Publish & Send ({selectedRecipients.length + selectedUsers.length} recipients)
-              </button>
+              <div className="modal-buttons" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={handleCloseModal}
+                  disabled={publishLoading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleConfirmPublish}
+                  disabled={publishLoading || (selectedRecipients.length === 0 && selectedUsers.length === 0)}
+                >
+                  Publish & Send ({getUniqueRecipientCount()} recipients)
+                </button>
+              </div>
             </div>
           </div>
         </div>

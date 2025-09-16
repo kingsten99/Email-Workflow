@@ -40,7 +40,7 @@ const BlocksPanel: React.FC<BlocksPanelProps> = ({ onAddComponent, selectedCompo
           color: '#667eea',
           border: '1px solid rgba(102, 126, 234, 0.2)'
         }}>
-          📦 Adding to selected {selectedComponent.type}
+          Adding to selected {selectedComponent.type}
         </div>
       )}
       <div className="blocks-grid">

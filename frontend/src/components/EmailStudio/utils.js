@@ -13,7 +13,8 @@ export const generateHTML = (components) => {
       boxSizing: 'border-box',
       position: 'relative', // Match canvas wrapper positioning
       display: component.styles.display || 'inline-block', // Use component's actual display or default to inline-block like canvas
-      margin: component.styles.margin || '0px',
+      margin: component.styles.margin || '0 0 15px 0', // Add 15px bottom margin by default
+      padding: component.styles.padding || '0',
       maxWidth: component.styles.maxWidth || '100%',
       verticalAlign: component.styles.verticalAlign || 'top', // Align components to top when inline
       width: component.styles.width || 'fit-content', // Preserve width
@@ -65,8 +66,10 @@ export const generateHTML = (components) => {
       case 'image':
         const imgStyles = {
           ...emailSafeStyles,
-          display: 'inline-block',
+          display: component.styles.display || 'block',
           verticalAlign: 'top',
+          margin: component.styles.margin || '0 0 15px 0',
+          lineHeight: '0', // Prevents extra spacing below images
         };
         const imgStyleString = Object.entries(imgStyles)
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
@@ -85,10 +88,47 @@ export const generateHTML = (components) => {
           .join('; ');
         return `<a id="${component.id}"${getResponsiveClasses(component)} href="${component.attributes.href || '#'}" style="${buttonStyleString}">${component.content}</a>`;
       case 'container':
+        // Check if this is a list container
+        if (component.attributes?.listType) {
+          const ListTag = component.attributes.listType === 'ordered' ? 'ol' : 'ul';
+          const listStyleType = component.attributes.listType === 'ordered' ? 'decimal' : 'disc';
+          const listChildren = component.children || [];
+          
+          // Generate HTML for each child as list items using flexbox approach
+          const listItemsHTML = listChildren.map((child, index) => {
+            const childHTML = generateHTML([child]); // Pass as array since generateHTML expects an array
+            const bulletOrNumber = component.attributes.listType === 'ordered' ? `${index + 1}.` : '•';
+            return `
+              <div style="margin-bottom: 8px; position: relative; padding-left: 25px; line-height: 1.5;" class="responsive-list-item">
+                <span style="position: absolute; left: 0px; top: 0px; width: 20px; font-size: 16px; font-weight: bold; color: #333; text-align: left; line-height: 1.5;" class="responsive-list-bullet">
+                  ${bulletOrNumber}
+                </span>
+                <div style="line-height: 1.5;" class="responsive-list-content">
+                  ${childHTML}
+                </div>
+              </div>
+            `;
+          }).join('');
+          
+          const listStyles = {
+            ...emailSafeStyles,
+            paddingLeft: '0px',
+            margin: '0px',
+            display: 'block'
+          };
+          const listStyleString = Object.entries(listStyles)
+            .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
+            .join('; ');
+          
+          return `<div id="${component.id}"${getResponsiveClasses(component)} style="${listStyleString}">${listItemsHTML}</div>`;
+        }
+        
+        // Regular container
         const childrenHTML = component.children ? generateHTML(component.children) : component.content;
         const containerStyles = {
           ...emailSafeStyles,
           display: 'block', // Containers should be block level
+          width: component.styles.width || '100%', // Ensure containers have full width by default
         };
         const containerStyleString = Object.entries(containerStyles)
           .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
@@ -209,12 +249,30 @@ export const generateCSS = (components) => {
       text-decoration: none;
     }
 
+    /* Consistent component spacing */
+    img {
+      display: block;
+      margin: 0 0 15px 0;
+      padding: 0;
+      line-height: 0;
+      vertical-align: top;
+    }
+    
+    div {
+      margin-bottom: 15px;
+    }
+    
+    /* Remove bottom margin from last child to prevent extra space */
+    div:last-child {
+      margin-bottom: 0;
+    }
+
     /* Email container */
     .email-container {
-      display: contents;
+      display: block;
       overflow-wrap: break-word;
-      max-width: 600px;
-      margin: 0 auto;
+      width: 100%;
+      margin: 0;
       background-color: #ffffff;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       padding: 0;
@@ -223,8 +281,7 @@ export const generateCSS = (components) => {
     /* Responsive component classes */
     .responsive-container {
       width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
+      margin: 0;
     }
     
     .responsive-column {
@@ -341,6 +398,26 @@ export const generateCSS = (components) => {
       .responsive-divider {
         margin: 15px 0 !important;
         width: 100% !important;
+      }
+      
+      /* Responsive list styles for mobile */
+      .responsive-list-item {
+        padding-left: 20px !important;
+      }
+      
+      .responsive-list-bullet {
+        width: 16px !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+      }
+      
+      .responsive-list-content {
+        line-height: 1.5 !important;
+      }
+      
+      .responsive-list-content {
+        flex: 1 !important;
+        width: calc(100% - 20px) !important;
       }
 
       /* Keep buttons and small elements inline */

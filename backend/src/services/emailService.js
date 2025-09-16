@@ -36,6 +36,25 @@ class EmailService {
     });
   }
 
+  async getUsersByNames(names) {
+    return new Promise((resolve, reject) => {
+      if (!names || names.length === 0) {
+        return resolve([]);
+      }
+      
+      const placeholders = names.map(() => '?').join(',');
+      const query = `SELECT id, name, email, role FROM users WHERE name IN (${placeholders}) AND email IS NOT NULL`;
+      
+      db.query(query, names, (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
   // Clean and optimize HTML for email clients
   cleanHtmlForEmail(html) {
     // Remove GrapesJS specific attributes and classes
@@ -63,7 +82,7 @@ class EmailService {
       `src="${baseUrl}/uploads/$1"`
     );
 
-    console.log('🔗 Converting relative URLs to absolute URLs for email');
+    console.log('Converting relative URLs to absolute URLs for email');
     return updatedHtml;
   }
 
@@ -95,9 +114,9 @@ class EmailService {
           
           const base64Image = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
           updatedHtml = updatedHtml.replace(match[0], `src="${base64Image}"`);
-          console.log(`🖼️ Converted image to base64: ${match[1]}`);
+          console.log(`Converted image to base64: ${match[1]}`);
         } else {
-          console.log(`❌ Image file not found: ${imagePath}`);
+          console.log(`Image file not found: ${imagePath}`);
         }
       } catch (error) {
         console.error(`Failed to convert image to base64: ${match[1]}`, error);
@@ -136,10 +155,10 @@ class EmailService {
           
           // Replace src with cid reference
           updatedHtml = updatedHtml.replace(match[0], `src="cid:${cid}"`);
-          console.log(`📎 Added CID attachment: ${filename} as cid:${cid}`);
+          console.log(`Added CID attachment: ${filename} as cid:${cid}`);
           cidCounter++;
         } else {
-          console.log(`❌ Image file not found: ${imagePath}`);
+          console.log(`Image file not found: ${imagePath}`);
         }
       } catch (error) {
         console.error(`Failed to process image for CID: ${match[1]}`, error);
@@ -241,20 +260,20 @@ class EmailService {
   async sendTemplateEmails(templateData) {
     const { template_name, subject, email_body, email_css, created_by, recipients } = templateData;
     
-    console.log('📧 Sending template emails:', {
+    console.log('Sending template emails:', {
       template: template_name,
       recipients: recipients,
       created_by
     });
 
-    // Fetch users from database based on selected roles
-    const users = await this.getUsersByRoles(recipients);
+    // Fetch users from database based on recipient names
+    const users = await this.getUsersByNames(recipients);
     
     if (users.length === 0) {
-      throw new Error('No valid users found for selected roles');
+      throw new Error('No valid users found for selected recipients');
     }
 
-    console.log(`👥 Found ${users.length} users for roles:`, recipients);
+    console.log(`Found ${users.length} users for names:`, recipients);
 
     const results = [];
     
@@ -294,10 +313,10 @@ class EmailService {
           messageId: result.messageId
         });
 
-        console.log(`✅ Email sent to ${user.name} (${user.email}) - Message ID: ${result.messageId}`);
+        console.log(`Email sent to ${user.name} (${user.email}) - Message ID: ${result.messageId}`);
 
       } catch (error) {
-        console.error(`❌ Failed to send email to ${user.name} (${user.email}):`, error.message);
+        console.error(`Failed to send email to ${user.name} (${user.email}):`, error.message);
         results.push({
           email: user.email,
           name: user.name,
@@ -311,7 +330,7 @@ class EmailService {
     const successCount = results.filter(r => r.status === 'sent').length;
     const failureCount = results.filter(r => r.status === 'failed').length;
 
-    console.log(`📊 Email sending completed: ${successCount} sent, ${failureCount} failed`);
+    console.log(`Email sending completed: ${successCount} sent, ${failureCount} failed`);
 
     return {
       template_name,
@@ -324,7 +343,7 @@ class EmailService {
 
   // Send test email
   async sendTestEmail(templateData, testEmail) {
-    console.log(`📧Sending test email to: ${testEmail}`);
+    console.log(`Sending test email to: ${testEmail}`);
 
     const userData = {
       name: 'Test User',

@@ -44,7 +44,7 @@ const VariablesPanel: React.FC<VariablesPanelProps> = ({
       
       {selectedComponent && selectedComponent.type !== 'text' && selectedComponent.type !== 'button' && (
         <div className="variable-warning">
-          <p>⚠️ Variables can only be added to text or button components</p>
+          <p>Warning: Variables can only be added to text or button components</p>
         </div>
       )}
 

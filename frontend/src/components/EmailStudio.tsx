@@ -357,7 +357,7 @@ const EmailStudio: React.FC = () => {
     if (selectedComponent.type === 'text') {
       const updatedContent = selectedComponent.content + `{{${variableKey}}}`;
       updateComponent(selectedComponent.id, { content: updatedContent });
-      console.log(`✅ Inserted variable {{${variableKey}}} into selected component`);
+      console.log(`Inserted variable {{${variableKey}}} into selected component`);
     } else {
       alert('Variables can only be inserted into text components');
     }
@@ -411,10 +411,22 @@ const EmailStudio: React.FC = () => {
         navigate(`/studio/${newTemplate.id}`);
       }
       
-      alert('Template saved successfully! 🎉');
-    } catch (error) {
+      alert('Template saved successfully!');
+    } catch (error: any) {
       console.error('Error saving template:', error);
-      alert('Error saving template. Please try again.');
+      
+      // Handle specific error cases
+      if (error.response && error.response.status === 409) {
+        // Duplicate template name error
+        const errorMessage = error.response.data?.message || 'Template name already exists. Please choose a different name.';
+        alert(`Error: ${errorMessage}`);
+      } else if (error.response && error.response.data?.error) {
+        // Other API errors
+        alert(`Error: ${error.response.data.error}`);
+      } else {
+        // Generic error
+        alert('Error saving template. Please try again.');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -807,7 +819,7 @@ const EmailStudio: React.FC = () => {
                 </div>
                 <div className="responsive-info">
                   <span className="responsive-badge">
-                    📱 Responsive Design
+                    Mobile Responsive Design
                   </span>
                   <div className="responsive-tooltip">
                     Edit once - adapts automatically to mobile using CSS media queries
