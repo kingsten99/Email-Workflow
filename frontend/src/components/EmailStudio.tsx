@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { templateService } from '../services/api';
+import useAuth from '../hooks/useAuth';
 import './EmailStudio.css';
 
 // Import modular components
@@ -19,6 +20,7 @@ const EmailStudio: React.FC = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
   
   // Custom Editor State
   const [components, setComponents] = useState<EmailComponent[]>([]);
@@ -396,7 +398,7 @@ const EmailStudio: React.FC = () => {
       
       const templateData = {
         template_name: formData.templateName,
-        created_by: 'Email Studio User',
+        created_by: user?.name || 'Unknown User',
         subject: formData.subject,
         email_body: wrappedHtml,
         email_css: css,

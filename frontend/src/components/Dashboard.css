@@ -15,14 +15,28 @@
   border-bottom: 2px solid #eee;
 }
 
-.dashboard-header h1 {
+.header-left h1 {
   color: #333;
-  margin: 0;
+  margin: 0 0 5px 0;
   font-size: 2rem;
   font-weight: 600;
 }
 
-.create-template-btn {
+.user-welcome {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.header-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.create-template-btn,
+.logout-btn {
   padding: 12px 24px;
   font-size: 16px;
   font-weight: 600;
@@ -456,9 +470,16 @@
     align-items: stretch;
   }
 
-  .dashboard-header h1 {
-    font-size: 1.5rem;
+  .header-left {
     text-align: center;
+  }
+
+  .header-left h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-right {
+    justify-content: center;
   }
 
   .dashboard-stats {
