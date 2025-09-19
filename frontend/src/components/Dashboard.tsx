@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardStats, EmailTemplate, User } from '../types';
 import { dashboardService, templateService } from '../services/api';
-import useAuth from '../hooks/useAuth';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
@@ -18,7 +17,6 @@ const Dashboard: React.FC = () => {
   const [publishLoading, setPublishLoading] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
 
   const recipientOptions = [
     { value: 'admin', label: 'Admin' },
@@ -69,11 +67,6 @@ const Dashboard: React.FC = () => {
 
   const handleCreateTemplate = () => {
     navigate('/editor');
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   const handleEditTemplate = (templateId: string) => {
@@ -240,27 +233,13 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <div className="header-left">
-          <h1>Email Template Dashboard</h1>
-          {user && (
-            <p className="user-welcome">Welcome, {user.name} ({user.role})</p>
-          )}
-        </div>
-        <div className="header-right">
-          <button 
-            className="btn btn-primary create-template-btn"
-            onClick={handleCreateTemplate}
-          >
-            Create New Template
-          </button>
-          <button 
-            className="btn btn-secondary logout-btn"
-            onClick={handleLogout}
-            title="Logout"
-          >
-            Logout
-          </button>
-        </div>
+        <h1>Email Template Dashboard</h1>
+        <button 
+          className="btn btn-primary create-template-btn"
+          onClick={handleCreateTemplate}
+        >
+          Create New Template
+        </button>
       </div>
 
       {/* Stats Section */}

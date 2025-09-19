@@ -713,7 +713,6 @@ body {
   border-radius: var(--radius-lg);
   transition: all 0.3s ease;
   position: relative;
-  display: block;
 }
 
 .canvas-content[data-drag-over="true"] {
@@ -1204,42 +1203,6 @@ body {
   background: #f8fafc;
 }
 
-/* Apply same text wrapping rules as canvas to preview */
-.preview-content *,
-.preview-iframe * {
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Text content handling in preview - same as canvas */
-.preview-content p,
-.preview-content div,
-.preview-content span,
-.preview-content h1,
-.preview-content h2,
-.preview-content h3,
-.preview-content h4,
-.preview-content h5,
-.preview-content h6,
-.preview-iframe p,
-.preview-iframe div,
-.preview-iframe span,
-.preview-iframe h1,
-.preview-iframe h2,
-.preview-iframe h3,
-.preview-iframe h4,
-.preview-iframe h5,
-.preview-iframe h6 {
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-  max-width: 100%;
-}
-
 .preview-content.desktop-preview {
   padding: 20px;
 }
@@ -1254,25 +1217,6 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-}
-
-/* Ensure preview iframe content matches canvas exactly */
-.preview-iframe body {
-  margin: 0;
-  padding: 20px 40px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.preview-iframe * {
-  word-wrap: break-word !important;
-  word-break: break-word !important;
-  overflow-wrap: break-word !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
 }
 
 .desktop-preview .preview-iframe {
@@ -1593,12 +1537,6 @@ body {
 
 .canvas-content * {
   position: relative;
-  /* Prevent text overflow and ensure proper wrapping */
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 /* Ensure selected components have enough space for controls */
@@ -1606,61 +1544,6 @@ body {
 .canvas-content > *[tabindex="0"] {
   margin-top: 10px;
   margin-bottom: 10px;
-}
-
-/* Text content handling - prevent overflow */
-.canvas-content p,
-.canvas-content div,
-.canvas-content span,
-.canvas-content h1,
-.canvas-content h2,
-.canvas-content h3,
-.canvas-content h4,
-.canvas-content h5,
-.canvas-content h6 {
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-  max-width: 100%;
-}
-
-/* Text components should respect container boundaries */
-.email-component[data-component-type="text"] {
-  max-width: 100%;
-}
-
-.email-component[data-component-type="text"] * {
-  max-width: 100%;
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-}
-
-/* Ensure all content inside email components stays within bounds */
-.email-component > * {
-  max-width: 100%;
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  box-sizing: border-box;
-  white-space: normal;
-  display: block !important; /* Force all children to be block elements */
-  width: 100% !important; /* Force full width */
-}
-
-/* Force vertical stacking for all canvas components */
-.canvas-content .email-component {
-  float: none !important;
-  display: block !important;
-  width: 100% !important;
-  margin-bottom: 15px !important;
-}
-
-.canvas-content .email-component > div {
-  display: block !important;
-  width: 100% !important;
 }
 
 /* Prevent action buttons from interfering with text selection */
@@ -1789,12 +1672,9 @@ input:focus {
   border: none; /* No border on wrapper */
   transition: all 0.2s ease;
   position: relative;
-  display: block !important; /* Force block display */
-  width: 100% !important; /* Force full width */
-  max-width: 600px; /* Limit width for better alignment */
-  margin: 10px 0 !important; /* Force vertical stacking with margin */
-  overflow-wrap: break-word; /* Allow text wrapping */
-  clear: both; /* Clear any floating elements */
+  display: inline-block;
+  max-width: 100%;
+  margin: 10px; /* Add margin to give space for toolbar and handles */
 }
 
 /* Apply border to the actual content when selected and position resize handles relative to it */
